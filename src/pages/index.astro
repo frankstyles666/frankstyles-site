@@ -1,0 +1,873 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { pieces } from '../data/pieces.js';
+---
+
+<Layout title="Furniture — Frome">
+
+  <!-- Full-screen scroll-snap gallery -->
+  <div class="gallery" id="gallery">
+    {pieces.map((piece) => (
+      <section
+        class="gallery__slide"
+        data-piece-id={piece.id}
+        aria-label={piece.name}
+      >
+        <img
+          src={piece.mainImage}
+          alt={piece.name}
+          class="gallery__img"
+          draggable="false"
+          style={piece.objectPosition ? `object-position: ${piece.objectPosition}` : ''}
+        />
+      </section>
+    ))}
+  </div>
+
+  <!-- Site header -->
+  <div class="site-header">
+    <p class="site-title">FRANK STYLES</p>
+    <button class="info-btn" id="info-btn" aria-label="About">ABOUT</button>
+  </div>
+
+  <!-- Full-screen overlay (about/contact) -->
+  <div class="main-overlay" id="main-overlay" aria-hidden="true">
+    <div class="main-overlay__content">
+      <div id="overlay-content"></div>
+    </div>
+  </div>
+
+  <!-- Info panel (slides in from left) -->
+  <aside class="info-panel" id="info-panel" aria-hidden="true">
+    <div class="info-panel__inner">
+
+      <!-- Details column (fixed 45vw) -->
+      <div class="info-panel__details">
+        <button class="close-btn" id="info-close" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <line x1="1" y1="1" x2="13" y2="13" stroke="currentColor" stroke-width="1.2"/>
+            <line x1="13" y1="1" x2="1" y2="13" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </button>
+        <div class="info-panel__scroll">
+          <header class="info-panel__header">
+            <p class="info-panel__name" id="info-name"></p>
+            <p class="info-panel__year" id="info-year"></p>
+          </header>
+          <dl class="info-panel__meta">
+            <dt>Materials</dt>
+            <dd id="info-materials"></dd>
+            <dt>Dimensions</dt>
+            <dd id="info-dimensions"></dd>
+          </dl>
+          <p class="info-panel__description" id="info-description"></p>
+        </div>
+      </div>
+
+      <!-- Gallery column (revealed when is-wide) -->
+      <div class="info-panel__gallery" id="info-gallery">
+        <div class="info-panel__gallery-scroll" id="info-gallery-scroll"></div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- View / Collapse images toggle -->
+  <button class="info-panel__expand" id="info-expand">View more images</button>
+
+  <!-- Custom cursor label -->
+  <div class="custom-cursor" id="custom-cursor" aria-hidden="true">
+    <div class="custom-cursor__window">
+      <span class="custom-cursor__text">CLICK FOR MORE INFO</span>
+    </div>
+  </div>
+
+  <!-- Backdrop: clicking outside info panel closes it -->
+  <div class="info-backdrop" id="info-backdrop" aria-hidden="true"></div>
+
+  <!-- Piece navigation arrows -->
+  <button class="nav-arrow nav-arrow--left" id="arrow-left" aria-label="Previous piece">
+    <svg width="27" height="51" viewBox="0 0 18 34" fill="none" aria-hidden="true">
+      <path d="M14 2L3 17L14 32" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <button class="nav-arrow nav-arrow--right" id="arrow-right" aria-label="Next piece">
+    <svg width="27" height="51" viewBox="0 0 18 34" fill="none" aria-hidden="true">
+      <path d="M4 2L15 17L4 32" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+</Layout>
+
+<style>
+  /* ── Gallery ─────────────────────────────────────── */
+
+  .gallery {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .gallery__slide {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    cursor: default;
+    overflow: hidden;
+  }
+
+  .gallery__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+    user-select: none;
+    display: block;
+  }
+
+  /* ── Site header ─────────────────────────────────── */
+
+  .site-header {
+    position: fixed;
+    top: 1.75rem;
+    left: 2.25rem;
+    z-index: 302;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .site-title {
+    font-family: 'SimSun', serif;
+    font-size: 2.2rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    color: #353269;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.35s ease, letter-spacing 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .site-title.is-hidden {
+    opacity: 0;
+  }
+
+  /* ── Info button ─────────────────────────────────── */
+
+  .info-btn {
+    font-family: 'SimSun', serif;
+    font-size: 1.32rem;
+    font-weight: 400;
+    letter-spacing: 0.6em;
+    color: #246319;
+    white-space: nowrap;
+    writing-mode: vertical-lr;
+    text-orientation: upright;
+    margin-top: 2rem;
+    margin-left: -0.3rem;
+    opacity: 0.5;
+    transition: opacity 0.15s ease, letter-spacing 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .info-btn:hover {
+    opacity: 1;
+  }
+
+  .info-btn.is-active {
+    opacity: 1;
+  }
+
+  /* ── Main overlay ────────────────────────────────── */
+
+  .main-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(252, 251, 249, 0.35);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    z-index: 300;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .main-overlay.is-open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+
+
+  .main-overlay__content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 38ch;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .main-overlay.show-content .main-overlay__content {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .main-overlay__content a {
+    color: #e61515;
+    border-bottom: 1px solid rgba(230, 21, 21, 0.3);
+    transition: border-color 0.15s;
+  }
+
+  .main-overlay__content a:hover {
+    border-bottom-color: #e61515;
+  }
+
+  /* ── Shared close button ─────────────────────────── */
+
+  .close-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 1;
+    color: #e61515;
+    padding: 0.35rem;
+    line-height: 0;
+    transition: opacity 0.15s;
+  }
+
+  .close-btn:hover {
+    opacity: 0.5;
+  }
+
+  /* ── Info panel ──────────────────────────────────── */
+
+  .info-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100vh;
+    background: rgba(252, 251, 249, 0.75);
+    backdrop-filter: blur(12px) saturate(1.1);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow: hidden;
+  }
+
+  .info-panel.is-open {
+    transform: translateX(0);
+  }
+
+  .info-panel.is-wide {
+    width: 100%;
+  }
+
+  .info-panel__inner {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+  }
+
+  /* Left column: piece details */
+
+  .info-panel__details {
+    position: relative;
+    width: 40vw;
+    min-width: 40vw;
+    flex-shrink: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .info-panel__scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8rem 3rem 3.5rem 9.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+  }
+
+  .info-panel__header {
+    padding-top: 0.5rem;
+  }
+
+  .info-panel__name {
+    font-family: 'SimSun', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.1;
+    color: #e61515;
+    letter-spacing: 0.25em;
+  }
+
+  .info-panel__year {
+    margin-top: 0.6rem;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #aaa;
+  }
+
+  .info-panel__meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem 1.75rem;
+    align-items: baseline;
+    width: 100%;
+  }
+
+  .info-panel__meta dt {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #bbb;
+  }
+
+  .info-panel__meta dd {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px;
+    color: #444;
+    line-height: 1.55;
+  }
+
+  .info-panel__description {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    color: #444;
+    line-height: 1.7;
+    white-space: pre-line;
+    width: 100%;
+  }
+
+  .info-panel__description:empty {
+    display: none;
+  }
+
+  .info-panel__expand {
+    position: fixed;
+    left: 70vw;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    font-family: 'SimSun', serif;
+    font-size: 2.25rem;
+    font-weight: 400;
+    letter-spacing: 0.6em;
+    text-transform: uppercase;
+    color: #e61515;
+    padding: 1rem 0.5rem;
+    writing-mode: vertical-lr;
+    text-orientation: upright;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 201;
+  }
+
+  .info-panel__expand.is-visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .info-panel__expand:hover {
+    opacity: 0.5;
+  }
+
+  /* Right column: image gallery */
+
+  .info-panel__gallery {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    border-left: 1px solid rgba(26, 26, 26, 0.06);
+  }
+
+  .info-panel.is-wide .info-panel__gallery {
+    opacity: 1;
+    pointer-events: all;
+    transition: opacity 0.6s ease 0.6s;
+  }
+
+  .info-panel__gallery-scroll {
+    position: absolute;
+    inset: 0;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+  }
+
+  .info-panel__gallery-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ── Nav arrows ─────────────────────────────────── */
+
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 205;
+    color: #e61515;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    padding: 1.5rem 1.25rem;
+    line-height: 0;
+  }
+
+  .nav-arrow--left { left: 4rem; }
+  .nav-arrow--right { right: 4rem; }
+
+  .nav-arrow.is-visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ── Info panel backdrop ─────────────────────────── */
+
+  .info-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    display: none;
+  }
+
+  .info-backdrop.is-active {
+    display: block;
+  }
+
+  /* ── Custom cursor ───────────────────────────────── */
+
+  .custom-cursor {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.15s ease;
+    user-select: none;
+  }
+
+  .custom-cursor.is-active {
+    opacity: 1;
+  }
+
+  .custom-cursor__window {
+    overflow: hidden;
+    width: 3.52rem;
+    font-family: 'SimSun', serif;
+    font-size: 0.935rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    color: #e61515;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  .custom-cursor__text {
+    display: inline-block;
+    animation: cursor-scroll 5s linear infinite;
+  }
+
+  @keyframes cursor-scroll {
+    from { transform: translateX(3.52rem); }
+    to   { transform: translateX(-100%); }
+  }
+
+  /* Suppress default cursor inside the active zone */
+  body.cursor-zone-active,
+  body.cursor-zone-active * {
+    cursor: none !important;
+  }
+
+  /* ── Responsive ──────────────────────────────────── */
+
+  @media (max-width: 768px) {
+    .info-panel {
+      width: 100%;
+    }
+
+    .info-panel__details {
+      width: 100%;
+      min-width: unset;
+    }
+
+    .info-panel__scroll {
+      padding: 4.5rem 1.75rem 2.75rem;
+    }
+
+    .info-panel__name {
+      font-size: 1.875rem;
+    }
+
+    .info-panel__expand {
+      display: none;
+    }
+  }
+</style>
+
+<style is:global>
+  #overlay-content p,
+  #overlay-content address {
+    font-family: 'SimSun', serif;
+    font-size: 14px;
+    color: #246319;
+    line-height: 1.7;
+    margin-bottom: 0.875rem;
+    font-style: normal;
+  }
+  #overlay-content p:last-child,
+  #overlay-content address p:last-child {
+    margin-bottom: 0;
+  }
+
+  .info-img-item {
+    width: 100%;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    overflow: hidden;
+  }
+
+  .info-img-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+  }
+</style>
+
+<script define:vars={{ pieces }}>
+  const gallery           = document.getElementById('gallery');
+  const infoBtn           = document.getElementById('info-btn');
+  const siteTitle         = document.querySelector('.site-title');
+  const mainOverlay       = document.getElementById('main-overlay');
+  const overlayContent    = document.getElementById('overlay-content');
+  const infoPanel         = document.getElementById('info-panel');
+  const infoBackdrop      = document.getElementById('info-backdrop');
+  const infoClose         = document.getElementById('info-close');
+  const infoName          = document.getElementById('info-name');
+  const infoYear          = document.getElementById('info-year');
+  const infoMaterials     = document.getElementById('info-materials');
+  const infoDimensions    = document.getElementById('info-dimensions');
+  const infoDescription   = document.getElementById('info-description');
+  const infoExpand        = document.getElementById('info-expand');
+  const infoGalleryScroll = document.getElementById('info-gallery-scroll');
+const arrowLeft         = document.getElementById('arrow-left');
+  const arrowRight        = document.getElementById('arrow-right');
+
+  let currentPieceId = null;
+  let currentIndex = 0;
+  const gallerySlides = Array.from(gallery.querySelectorAll('.gallery__slide'));
+
+  // ── Piece navigation ───────────────────────────────
+
+  // Initialise: place each slide at its index offset, no animation
+  gallerySlides.forEach((slide, i) => {
+    slide.style.transition = 'none';
+    slide.style.transform  = `translateX(${i * 100}vw)`;
+  });
+
+  let isNavigating = false;
+  const SLIDE_EASING = 'transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+  function updateArrows() {
+    const show = pieces.length > 1 && !infoPanel.classList.contains('is-open');
+    arrowLeft.classList.toggle('is-visible', show);
+    arrowRight.classList.toggle('is-visible', show);
+  }
+
+  function navigatePiece(direction) {
+    if (isNavigating) return;
+    isNavigating = true;
+
+    const N        = pieces.length;
+    const prevIdx  = currentIndex;
+    const nextIdx  = (currentIndex + direction + N) % N;
+    const inSlide  = gallerySlides[nextIdx];
+    const outSlide = gallerySlides[prevIdx];
+
+    // Snap entering slide to the correct off-screen side instantly
+    inSlide.style.transition = 'none';
+    inSlide.style.transform  = `translateX(${direction * 100}vw)`;
+    inSlide.offsetHeight;    // force reflow
+
+    currentIndex = nextIdx;
+
+    // Animate both slides in the same direction
+    requestAnimationFrame(() => {
+      inSlide.style.transition  = SLIDE_EASING;
+      inSlide.style.transform   = 'translateX(0)';
+      outSlide.style.transition = SLIDE_EASING;
+      outSlide.style.transform  = `translateX(${-direction * 100}vw)`;
+    });
+
+    setTimeout(() => { isNavigating = false; }, 580);
+    updateArrows();
+    updateCursor(lastMouseX, lastMouseY);
+  }
+
+  arrowLeft.addEventListener('click',  (e) => { e.stopPropagation(); navigatePiece(-1); });
+  arrowRight.addEventListener('click', (e) => { e.stopPropagation(); navigatePiece(1); });
+
+  updateArrows();
+
+  function updateTitle() {
+    siteTitle.classList.toggle('is-panel-open', infoPanel.classList.contains('is-open'));
+  }
+
+  // ── About / Contact overlay ────────────────────────
+
+  const overlayText = {
+    about: `
+      <p>Furniture made by hand in Frome, Somerset.</p>
+      <p>Each piece begins with the material — its grain, weight, and character — and ends only when it feels resolved.</p>
+      <p>The work is quiet by intention. Designed to be used, and to last.</p>
+      <p>Available for commissions. Lead time is typically twelve to sixteen weeks.</p>
+    `,
+    contact: `
+      <address>
+        <p><a href="mailto:info@frankstyles.co.uk">info@frankstyles.co.uk</a></p>
+        <p>Frome, Somerset</p>
+<p></p>
+        <p>Workshop visits by appointment.</p>
+      </address>
+    `,
+  };
+
+  infoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (mainOverlay.classList.contains('is-open')) { dismissOverlay(); } else { openInfo(); }
+  });
+
+  function activateInfoBtn() {
+    // ABOUT button — vertical expansion
+    const rect      = infoBtn.getBoundingClientRect();
+    const available = window.innerHeight - 2 * rect.top;
+    const fontSize  = parseFloat(getComputedStyle(infoBtn).fontSize);
+    const charCount = infoBtn.textContent.trim().length;
+    const lsPx      = (available - charCount * fontSize) / (charCount - 1);
+    infoBtn.style.letterSpacing = `${Math.max(lsPx / fontSize, 0.6)}em`;
+    infoBtn.classList.add('is-active');
+
+    // Main title — horizontal expansion
+    const titleRect    = siteTitle.getBoundingClientRect();
+    const targetWidth  = window.innerWidth - 2 * titleRect.left;
+    const titleFs      = parseFloat(getComputedStyle(siteTitle).fontSize);
+    const titleChars   = siteTitle.textContent.length;
+    const currentLsPx  = parseFloat(getComputedStyle(siteTitle).letterSpacing);
+    const naturalWidth = siteTitle.offsetWidth - titleChars * currentLsPx;
+    const titleLsEm    = Math.max((targetWidth - naturalWidth) / (titleChars - 1) / titleFs, 0.25);
+    siteTitle.style.letterSpacing = `${titleLsEm}em`;
+  }
+
+  function deactivateInfoBtn() {
+    infoBtn.style.letterSpacing = '';
+    infoBtn.classList.remove('is-active');
+    siteTitle.style.letterSpacing = '';
+  }
+
+  function openInfo() {
+    overlayContent.innerHTML = overlayText.about + overlayText.contact;
+    mainOverlay.classList.add('is-open', 'show-content');
+    mainOverlay.setAttribute('aria-hidden', 'false');
+    activateInfoBtn();
+    updateTitle();
+    updateCursor(lastMouseX, lastMouseY);
+  }
+
+  function dismissOverlay() {
+    mainOverlay.classList.remove('is-open', 'show-content');
+    mainOverlay.setAttribute('aria-hidden', 'true');
+    deactivateInfoBtn();
+    updateTitle();
+    updateCursor(lastMouseX, lastMouseY);
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!mainOverlay.classList.contains('is-open')) return;
+    if (infoBtn.contains(e.target)) return;
+    dismissOverlay();
+  });
+
+  // ── Gallery click → info panel ─────────────────────
+
+  gallery.addEventListener('click', (e) => {
+    if (mainOverlay.classList.contains('is-open')) {
+      dismissOverlay();
+      return;
+    }
+    if (infoPanel.classList.contains('is-open')) return;
+    if (!cursorInZone) return;
+    openInfoPanel(pieces[currentIndex].id);
+  });
+
+  function openInfoPanel(id) {
+    const piece = pieces.find(p => p.id === id);
+    if (!piece) return;
+    currentPieceId = id;
+
+    infoName.textContent        = piece.name;
+    infoYear.textContent        = piece.year;
+    infoMaterials.textContent   = piece.materials;
+    infoDimensions.textContent  = piece.dimensions;
+    infoDescription.textContent = piece.description || '';
+
+    if (piece.additionalImages && piece.additionalImages.length) {
+      infoGalleryScroll.innerHTML = '';
+      infoGalleryScroll.scrollTop = 0;
+
+      // Apply is-wide instantly FIRST so the gallery column reaches its real dimensions
+      infoPanel.style.transition = 'none';
+      infoPanel.classList.add('is-wide');
+      infoPanel.offsetHeight; // force reflow — gallery now has correct clientHeight
+      infoPanel.style.transition = '';
+
+      const peekPx    = 48;
+      const itemHeight = infoGalleryScroll.clientHeight > 0
+        ? infoGalleryScroll.clientHeight - peekPx
+        : window.innerHeight - peekPx;
+
+      piece.additionalImages.forEach(src => {
+        const item = document.createElement('div');
+        item.className = 'info-img-item';
+        item.style.height = `${itemHeight}px`;
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = piece.name;
+        item.appendChild(img);
+        infoGalleryScroll.appendChild(item);
+      });
+
+      infoGalleryScroll.scrollTop = 0;
+      requestAnimationFrame(() => { infoGalleryScroll.scrollTop = 0; });
+
+      infoPanel.classList.add('is-open');
+      infoExpand.classList.remove('is-visible');
+    } else {
+      infoPanel.classList.add('is-open');
+      infoExpand.classList.remove('is-visible');
+    }
+
+    infoPanel.setAttribute('aria-hidden', 'false');
+    infoBackdrop.classList.add('is-active');
+    updateTitle();
+    updateArrows();
+    updateCursor(lastMouseX, lastMouseY);
+  }
+
+  function openExpanded() {
+    const piece = pieces.find(p => p.id === currentPieceId);
+    if (!piece || !piece.additionalImages || !piece.additionalImages.length) return;
+
+    infoGalleryScroll.innerHTML = '';
+    piece.additionalImages.forEach(src => {
+      const item = document.createElement('div');
+      item.className = 'info-img-item';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = piece.name;
+      item.appendChild(img);
+      infoGalleryScroll.appendChild(item);
+    });
+
+    infoPanel.classList.add('is-wide');
+    infoExpand.classList.remove('is-visible');
+  }
+
+  function closeExpanded() {
+    infoPanel.classList.remove('is-wide');
+    infoExpand.innerHTML = 'View more images';
+    infoExpand.classList.add('is-visible');
+  }
+
+  function closeInfoPanel() {
+    infoPanel.classList.remove('is-open', 'is-wide');
+    infoPanel.setAttribute('aria-hidden', 'true');
+    infoBackdrop.classList.remove('is-active');
+    infoExpand.innerHTML = 'View more images';
+    infoExpand.classList.remove('is-visible');
+    setTimeout(() => {
+      infoGalleryScroll.innerHTML = '';
+      infoGalleryScroll.scrollTop = 0;
+    }, 460);
+    currentPieceId = null;
+    updateTitle();
+    updateArrows();
+    updateCursor(lastMouseX, lastMouseY);
+  }
+
+  infoExpand.addEventListener('click', openExpanded);
+infoClose.addEventListener('click', closeInfoPanel);
+  infoBackdrop.addEventListener('click', closeInfoPanel);
+
+  // ── Escape key ─────────────────────────────────────
+
+  // ── Custom cursor ──────────────────────────────────
+  const customCursor = document.getElementById('custom-cursor');
+
+  function isOverlayActive() {
+    return infoPanel.classList.contains('is-open')
+      || mainOverlay.classList.contains('is-open');
+  }
+
+  function updateCursor(x, y) {
+    customCursor.style.left = x + 'px';
+    customCursor.style.top  = y + 'px';
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    cursorInZone = x > w * 0.125 && x < w * 0.875 && y > h * 0.125 && y < h * 0.875;
+    const show = cursorInZone && !isOverlayActive();
+    customCursor.classList.toggle('is-active', show);
+    document.body.classList.toggle('cursor-zone-active', show);
+  }
+
+  let lastMouseX = -1, lastMouseY = -1;
+  let cursorInZone = false;
+  document.addEventListener('mousemove', (e) => {
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    updateCursor(lastMouseX, lastMouseY);
+  });
+  document.addEventListener('mouseleave', () => {
+    customCursor.classList.remove('is-active');
+    document.body.classList.remove('cursor-zone-active');
+  });
+
+  // ── Escape key ─────────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (infoPanel.classList.contains('is-open')) {
+        closeInfoPanel();
+      } else {
+        dismissOverlay();
+      }
+      return;
+    }
+    const overlayActive = infoPanel.classList.contains('is-open')
+      || mainOverlay.classList.contains('is-open');
+    if (!overlayActive) {
+      if (e.key === 'ArrowLeft')  navigatePiece(-1);
+      if (e.key === 'ArrowRight') navigatePiece(1);
+    }
+  });
+</script>
