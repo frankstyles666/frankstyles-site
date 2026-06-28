@@ -1,24 +1,50 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { Image, getImage } from 'astro:assets';
 import { pieces } from '../data/pieces.js';
+
+// Pre-optimise overlay gallery images at build time so browser JS gets WebP URLs
+const browserPieces = await Promise.all(
+  pieces.map(async (piece) => {
+    const additionalImages = await Promise.all(
+      (piece.additionalImages || []).map(async (imgMeta) => {
+        const opt = await getImage({ src: imgMeta, format: 'webp', quality: 80, width: 900 });
+        return { src: opt.src };
+      })
+    );
+    return {
+      id: piece.id,
+      name: piece.name,
+      year: piece.year,
+      materials: piece.materials,
+      dimensions: piece.dimensions,
+      description: piece.description,
+      additionalImages,
+    };
+  })
+);
 ---
 
 <Layout title="Furniture — Frome">
 
   <!-- Full-screen scroll-snap gallery -->
   <div class="gallery" id="gallery">
-    {pieces.map((piece) => (
+    {pieces.map((piece, i) => (
       <section
         class="gallery__slide"
         data-piece-id={piece.id}
         aria-label={piece.name}
       >
-        <img
+        <Image
           src={piece.mainImage}
           alt={piece.name}
           class="gallery__img"
+          format="webp"
+          quality={80}
+          width={1920}
+          loading={i === 0 ? 'eager' : 'lazy'}
           draggable="false"
-          style={piece.objectPosition ? `object-position: ${piece.objectPosition}` : ''}
+          style={piece.objectPosition ? `object-position: ${piece.objectPosition}` : undefined}
         />
         <p class="gallery__slide-title">{piece.name}</p>
       </section>
@@ -656,7 +682,7 @@ import { pieces } from '../data/pieces.js';
   }
 </style>
 
-<script define:vars={{ pieces }}>
+<script define:vars={{ pieces: browserPieces }}>
   const gallery           = document.getElementById('gallery');
   const infoBtn           = document.getElementById('info-btn');
   const siteTitle         = document.querySelector('.site-title');
@@ -1023,11 +1049,11 @@ const arrowLeft         = document.getElementById('arrow-left');
     infoGalleryScroll.scrollTop = 0;
     const imgs = piece.additionalImages || [];
     if (!imgs.length) return;
-    imgs.forEach(src => {
+    imgs.forEach(imgData => {
       const item = document.createElement('div');
       item.className = 'info-img-item';
       const img = document.createElement('img');
-      img.src = src;
+      img.src = imgData.src ?? imgData;
       img.alt = piece.name;
       item.appendChild(img);
       infoGalleryScroll.appendChild(item);
@@ -1158,11 +1184,11 @@ const arrowLeft         = document.getElementById('arrow-left');
     if (!piece || !piece.additionalImages || !piece.additionalImages.length) return;
 
     infoGalleryScroll.innerHTML = '';
-    piece.additionalImages.forEach(src => {
+    piece.additionalImages.forEach(imgData => {
       const item = document.createElement('div');
       item.className = 'info-img-item';
       const img = document.createElement('img');
-      img.src = src;
+      img.src = imgData.src ?? imgData;
       img.alt = piece.name;
       item.appendChild(img);
       infoGalleryScroll.appendChild(item);
