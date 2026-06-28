@@ -986,11 +986,20 @@ const arrowLeft         = document.getElementById('arrow-left');
 
   function deactivateInfoBtn() {
     infoBtn.classList.remove('is-active');
-    siteTitle.style.letterSpacing = '';
     const resetSpans = Array.from(siteTitle.querySelectorAll('.site-title__char'));
     if (resetSpans.length) {
+      // Animate spans back to base positions — letterSpacing stays spread so base positions don't shift
       resetSpans.forEach(span => { span.style.transform = ''; span.style.color = ''; span.style.opacity = ''; });
-      setTimeout(() => { siteTitle.textContent = titleRawText; }, 460);
+      setTimeout(() => {
+        // Atomically swap text + reset letterSpacing in a single frame with no transition
+        siteTitle.style.transition = 'none';
+        siteTitle.style.letterSpacing = '';
+        siteTitle.textContent = titleRawText;
+        siteTitle.offsetHeight; // force reflow before restoring transition
+        siteTitle.style.transition = '';
+      }, 460);
+    } else {
+      siteTitle.style.letterSpacing = '';
     }
   }
 
