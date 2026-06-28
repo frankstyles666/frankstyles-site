@@ -805,26 +805,39 @@ const arrowLeft         = document.getElementById('arrow-left');
     arrowRight.classList.remove('is-hidden');
   }
 
+  function animatedScrollTo(targetLeft, duration, callback) {
+    const startLeft = gallery.scrollLeft;
+    const delta = Math.max(0, targetLeft) - startLeft;
+    const startTime = performance.now();
+    function ease(t) { return t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t; }
+    function step(now) {
+      const t = Math.min((now - startTime) / duration, 1);
+      gallery.scrollLeft = startLeft + delta * ease(t);
+      if (t < 1) requestAnimationFrame(step);
+      else if (callback) callback();
+    }
+    requestAnimationFrame(step);
+  }
+
   function navigatePiece(direction) {
     if (isNavigating) return;
     isNavigating = true;
     const N = pieces.length;
 
-    const scrollToCloneEl = (el) => {
-      const t = el.offsetLeft + el.offsetWidth / 2 - gallery.clientWidth / 2;
-      gallery.scrollTo({ left: Math.max(0, t), behavior: 'smooth' });
-    };
-
     if (direction === -1 && currentIndex === 0 && cloneLastEl) {
-      // Scroll left into the clone of the last slide, then jump silently to the real one
-      scrollToCloneEl(cloneLastEl);
       currentIndex = N - 1;
-      setTimeout(() => { scrollToSlide(N - 1, false); isNavigating = false; }, 700);
+      const t = cloneLastEl.offsetLeft + cloneLastEl.offsetWidth / 2 - gallery.clientWidth / 2;
+      animatedScrollTo(Math.max(0, t), 550, () => {
+        scrollToSlide(N - 1, false);
+        isNavigating = false;
+      });
     } else if (direction === 1 && currentIndex === N - 1 && cloneFirstEl) {
-      // Scroll right into the clone of the first slide, then jump silently to the real one
-      scrollToCloneEl(cloneFirstEl);
       currentIndex = 0;
-      setTimeout(() => { scrollToSlide(0, false); isNavigating = false; }, 700);
+      const t = cloneFirstEl.offsetLeft + cloneFirstEl.offsetWidth / 2 - gallery.clientWidth / 2;
+      animatedScrollTo(Math.max(0, t), 550, () => {
+        scrollToSlide(0, false);
+        isNavigating = false;
+      });
     } else {
       currentIndex = (currentIndex + direction + N) % N;
       scrollToSlide(currentIndex, true);
