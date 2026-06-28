@@ -736,22 +736,34 @@ const arrowLeft         = document.getElementById('arrow-left');
     galStartSpacer.remove();
     galEndSpacer.remove();
     const N = gallerySlides.length;
-    const firstSlide = gallerySlides[0];
-    const lastSlide  = gallerySlides[N - 1];
+    const firstSlide  = gallerySlides[0];
+    const lastSlide   = gallerySlides[N - 1];
+    // Outer context clones fill the viewport edge so no empty background flashes on wrap
+    const penultSlide = gallerySlides[N - 2] || firstSlide;
+    const secondSlide = gallerySlides[1]     || lastSlide;
+
     cloneLastEl  = lastSlide.cloneNode(true);
     cloneFirstEl = firstSlide.cloneNode(true);
-    // Copy computed inline styles so portrait/landscape widths match
-    cloneLastEl.style.cssText  = lastSlide.style.cssText;
-    cloneFirstEl.style.cssText = firstSlide.style.cssText;
-    const copyImgStyle = (from, to) => {
+    const cloneOuterLeft  = penultSlide.cloneNode(true);
+    const cloneOuterRight = secondSlide.cloneNode(true);
+
+    const copyStyles = (from, to) => {
+      to.style.cssText = from.style.cssText;
       const fi = from.querySelector('.gallery__img');
       const ti = to.querySelector('.gallery__img');
       if (fi && ti) ti.style.cssText = fi.style.cssText;
     };
-    copyImgStyle(lastSlide,  cloneLastEl);
-    copyImgStyle(firstSlide, cloneFirstEl);
+    copyStyles(lastSlide,   cloneLastEl);
+    copyStyles(firstSlide,  cloneFirstEl);
+    copyStyles(penultSlide, cloneOuterLeft);
+    copyStyles(secondSlide, cloneOuterRight);
+
+    // Strip order: [outerLeft][cloneLastEl][slide0…slideN-1][cloneFirstEl][outerRight]
     gallery.insertBefore(cloneLastEl, firstSlide);
+    gallery.insertBefore(cloneOuterLeft, cloneLastEl);
     gallery.appendChild(cloneFirstEl);
+    gallery.appendChild(cloneOuterRight);
+
     scrollToSlide(currentIndex, false);
   }
 
