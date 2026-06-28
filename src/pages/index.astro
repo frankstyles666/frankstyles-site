@@ -42,7 +42,7 @@ const browserPieces = await Promise.all(
           format="webp"
           quality={90}
           width={1920}
-          loading={i === 0 ? 'eager' : 'lazy'}
+          loading="eager"
           draggable="false"
           style={piece.objectPosition ? `object-position: ${piece.objectPosition}` : undefined}
         />
