@@ -20,6 +20,7 @@ import { pieces } from '../data/pieces.js';
           draggable="false"
           style={piece.objectPosition ? `object-position: ${piece.objectPosition}` : ''}
         />
+        <p class="gallery__slide-title">{piece.name}</p>
       </section>
     ))}
   </div>
@@ -27,14 +28,15 @@ import { pieces } from '../data/pieces.js';
   <!-- Site header -->
   <div class="site-header">
     <p class="site-title">FRANK STYLES</p>
-    <button class="info-btn" id="info-btn" aria-label="About">ABOUT</button>
+    <button class="info-btn" id="info-btn" aria-label="Information">
+      <svg class="info-btn__circle" id="info-circle" viewBox="0 0 100 100" aria-hidden="true"></svg>
+    </button>
   </div>
 
   <!-- Full-screen overlay (about/contact) -->
-  <div class="main-overlay" id="main-overlay" aria-hidden="true">
-    <div class="main-overlay__content">
-      <div id="overlay-content"></div>
-    </div>
+  <div class="main-overlay" id="main-overlay" aria-hidden="true"></div>
+  <div class="main-overlay__content" id="overlay-wrapper" aria-hidden="true">
+    <div id="overlay-content"></div>
   </div>
 
   <!-- Info panel (slides in from left) -->
@@ -49,7 +51,7 @@ import { pieces } from '../data/pieces.js';
             <line x1="13" y1="1" x2="1" y2="13" stroke="currentColor" stroke-width="1.2"/>
           </svg>
         </button>
-        <div class="info-panel__scroll">
+        <div class="info-panel__scroll" id="info-scroll">
           <header class="info-panel__header">
             <p class="info-panel__name" id="info-name"></p>
             <p class="info-panel__year" id="info-year"></p>
@@ -78,24 +80,40 @@ import { pieces } from '../data/pieces.js';
   <!-- Custom cursor label -->
   <div class="custom-cursor" id="custom-cursor" aria-hidden="true">
     <div class="custom-cursor__window">
-      <span class="custom-cursor__text">CLICK FOR MORE INFO</span>
+      <span class="custom-cursor__text">CLICK TO DISCOVER</span>
     </div>
   </div>
 
   <!-- Backdrop: clicking outside info panel closes it -->
   <div class="info-backdrop" id="info-backdrop" aria-hidden="true"></div>
 
-  <!-- Piece navigation arrows -->
-  <button class="nav-arrow nav-arrow--left" id="arrow-left" aria-label="Previous piece">
-    <svg width="27" height="51" viewBox="0 0 18 34" fill="none" aria-hidden="true">
-      <path d="M14 2L3 17L14 32" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-  <button class="nav-arrow nav-arrow--right" id="arrow-right" aria-label="Next piece">
-    <svg width="27" height="51" viewBox="0 0 18 34" fill="none" aria-hidden="true">
-      <path d="M4 2L15 17L4 32" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
+  <!-- Product scrubber: horizontal cluster, position tracks current product index -->
+  <div class="piece-scrubber" id="piece-scrubber" aria-hidden="true">
+    <button class="piece-scrubber__arrow piece-scrubber__arrow--left" id="arrow-left" aria-label="Previous product">
+      <svg width="27" height="51" viewBox="0 0 18 34" fill="none" aria-hidden="true">
+        <path d="M14 2 L14 32 L2 17 Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="piece-scrubber__arrow piece-scrubber__arrow--right" id="arrow-right" aria-label="Next product">
+      <svg width="27" height="51" viewBox="0 0 18 34" fill="none" aria-hidden="true">
+        <path d="M4 2 L4 32 L16 17 Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Image scrubber: position tracks current image index -->
+  <div class="img-scrubber" id="img-scrubber" aria-hidden="true">
+    <button class="img-scrubber__arrow img-scrubber__arrow--up" id="img-up" aria-label="Previous image">
+      <svg width="51" height="27" viewBox="0 0 34 18" fill="none" aria-hidden="true">
+        <path d="M2 15 L32 15 L17 3 Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="img-scrubber__arrow img-scrubber__arrow--down" id="img-down" aria-label="Next image">
+      <svg width="51" height="27" viewBox="0 0 34 18" fill="none" aria-hidden="true">
+        <path d="M2 3 L32 3 L17 15 Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
 
 </Layout>
 
@@ -105,15 +123,21 @@ import { pieces } from '../data/pieces.js';
   .gallery {
     position: fixed;
     inset: 0;
-    overflow: hidden;
+    display: flex;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    scrollbar-width: none;
   }
+  .gallery::-webkit-scrollbar { display: none; }
 
   .gallery__slide {
-    position: absolute;
-    width: 100vw;
+    position: relative;
+    width: 100vw;       /* default for landscape; JS shrinks to auto for portrait */
     height: 100vh;
+    flex-shrink: 0;
     cursor: default;
     overflow: hidden;
+    background: #f5f4f0;
   }
 
   .gallery__img {
@@ -124,6 +148,22 @@ import { pieces } from '../data/pieces.js';
     pointer-events: none;
     user-select: none;
     display: block;
+  }
+
+  .gallery__slide-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'SimSun', serif;
+    font-size: 3.5rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    color: #e61515;
+    white-space: nowrap;
+    text-transform: uppercase;
+    pointer-events: none;
+    user-select: none;
   }
 
   /* ── Site header ─────────────────────────────────── */
@@ -141,7 +181,7 @@ import { pieces } from '../data/pieces.js';
 
   .site-title {
     font-family: 'SimSun', serif;
-    font-size: 2.2rem;
+    font-size: 3rem;
     font-weight: 400;
     letter-spacing: 0.25em;
     color: #353269;
@@ -151,6 +191,16 @@ import { pieces } from '../data/pieces.js';
     transition: opacity 0.35s ease, letter-spacing 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
+  .site-title.is-overlay-active {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  :global(.site-title__char) {
+    display: inline-block;
+    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
   .site-title.is-hidden {
     opacity: 0;
   }
@@ -158,27 +208,38 @@ import { pieces } from '../data/pieces.js';
   /* ── Info button ─────────────────────────────────── */
 
   .info-btn {
-    font-family: 'SimSun', serif;
-    font-size: 1.32rem;
-    font-weight: 400;
-    letter-spacing: 0.6em;
-    color: #246319;
-    white-space: nowrap;
-    writing-mode: vertical-lr;
-    text-orientation: upright;
-    margin-top: 2rem;
-    margin-left: -0.3rem;
-    opacity: 0.5;
-    transition: opacity 0.15s ease, letter-spacing 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-
-  .info-btn:hover {
+    position: fixed;
+    top: 1.75rem;
+    right: 2.25rem;
+    z-index: 303;
+    color: #353269;
+    line-height: 0;
     opacity: 1;
+    transition: opacity 0.25s ease;
   }
 
   .info-btn.is-active {
-    opacity: 1;
+    opacity: 0.5;
   }
+
+  .info-btn__circle {
+    display: block;
+    width: 5.5rem;
+    height: 5.5rem;
+    overflow: visible;
+    animation: info-spin 20s linear infinite;
+  }
+
+  @keyframes info-spin {
+    to { transform: rotate(-360deg); }
+  }
+
+  .info-btn__circle text {
+    font-family: 'SimSun', serif;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
 
   /* ── Main overlay ────────────────────────────────── */
 
@@ -202,17 +263,18 @@ import { pieces } from '../data/pieces.js';
 
 
   .main-overlay__content {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     max-width: 38ch;
+    z-index: 303;
     opacity: 0;
     transition: opacity 0.25s ease;
     pointer-events: none;
   }
 
-  .main-overlay.show-content .main-overlay__content {
+  .main-overlay__content.show-content {
     opacity: 1;
     pointer-events: all;
   }
@@ -280,18 +342,19 @@ import { pieces } from '../data/pieces.js';
 
   .info-panel__details {
     position: relative;
-    width: 40vw;
-    min-width: 40vw;
+    width: calc(40vw + 6rem);
+    min-width: calc(40vw + 6rem);
     flex-shrink: 0;
     height: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   .info-panel__scroll {
     flex: 1;
     overflow-y: auto;
-    padding: 8rem 3rem 3.5rem 9.5rem;
+    padding: 8rem 9rem 3.5rem 9.5rem;
     display: flex;
     flex-direction: column;
     gap: 2.25rem;
@@ -345,7 +408,9 @@ import { pieces } from '../data/pieces.js';
 
   .info-panel__description {
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px;
+    font-size: 16px;
+    font-weight: 300;
+    letter-spacing: 0.03em;
     color: #444;
     line-height: 1.7;
     white-space: pre-line;
@@ -409,7 +474,6 @@ import { pieces } from '../data/pieces.js';
     position: absolute;
     inset: 0;
     overflow-y: scroll;
-    scroll-snap-type: y mandatory;
     scrollbar-width: none;
   }
 
@@ -419,25 +483,76 @@ import { pieces } from '../data/pieces.js';
 
   /* ── Nav arrows ─────────────────────────────────── */
 
-  .nav-arrow {
+  .piece-scrubber {
     position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
+    /* fixed vertical position; horizontal (left) set by JS per product index */
+    bottom: 2.5rem;
+    left: 50%;
     z-index: 205;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
     color: #e61515;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.25s ease;
-    padding: 1.5rem 1.25rem;
-    line-height: 0;
+    transition: opacity 0.3s ease,
+                left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
-  .nav-arrow--left { left: 4rem; }
-  .nav-arrow--right { right: 4rem; }
-
-  .nav-arrow.is-visible {
+  .piece-scrubber.is-visible {
     opacity: 1;
     pointer-events: all;
+  }
+
+  .piece-scrubber__arrow {
+    color: #e61515;
+    padding: 1rem 0.5rem;
+    line-height: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .piece-scrubber__arrow.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── Image scrubber ──────────────────────────────── */
+
+  .img-scrubber {
+    position: fixed;
+    /* Right edge of the screen; vertical position (top) set by JS per image index */
+    right: 3rem;
+    top: 50%;
+    z-index: 206;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    color: #e61515;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease,
+                top 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .img-scrubber.is-visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .img-scrubber__arrow {
+    color: #e61515;
+    padding: 0.35rem 1rem;
+    line-height: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .img-scrubber__arrow.is-hidden {
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* ── Info panel backdrop ─────────────────────────── */
@@ -456,27 +571,21 @@ import { pieces } from '../data/pieces.js';
   /* ── Custom cursor ───────────────────────────────── */
 
   .custom-cursor {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0;
-    transform: translate(-50%, -50%);
-    transition: opacity 0.15s ease;
-    user-select: none;
+    display: none;
   }
 
   .custom-cursor.is-active {
-    opacity: 1;
+    display: none;
   }
 
   .custom-cursor__window {
     overflow: hidden;
-    width: 3.52rem;
+    width: 5.5rem;
     font-family: 'SimSun', serif;
-    font-size: 0.935rem;
+    font-size: 1.4rem;
     font-weight: 400;
     letter-spacing: 0.25em;
-    color: #e61515;
+    color: #002ee6;
     white-space: nowrap;
     line-height: 1;
   }
@@ -487,15 +596,10 @@ import { pieces } from '../data/pieces.js';
   }
 
   @keyframes cursor-scroll {
-    from { transform: translateX(3.52rem); }
+    from { transform: translateX(5.5rem); }
     to   { transform: translateX(-100%); }
   }
 
-  /* Suppress default cursor inside the active zone */
-  body.cursor-zone-active,
-  body.cursor-zone-active * {
-    cursor: none !important;
-  }
 
   /* ── Responsive ──────────────────────────────────── */
 
@@ -527,8 +631,8 @@ import { pieces } from '../data/pieces.js';
   #overlay-content p,
   #overlay-content address {
     font-family: 'SimSun', serif;
-    font-size: 14px;
-    color: #246319;
+    font-size: 16px;
+    color: #030438;
     line-height: 1.7;
     margin-bottom: 0.875rem;
     font-style: normal;
@@ -540,16 +644,12 @@ import { pieces } from '../data/pieces.js';
 
   .info-img-item {
     width: 100%;
-    flex-shrink: 0;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    overflow: hidden;
+    display: block;
   }
 
   .info-img-item img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
     display: block;
     pointer-events: none;
     user-select: none;
@@ -561,6 +661,7 @@ import { pieces } from '../data/pieces.js';
   const infoBtn           = document.getElementById('info-btn');
   const siteTitle         = document.querySelector('.site-title');
   const mainOverlay       = document.getElementById('main-overlay');
+  const overlayWrapper    = document.getElementById('overlay-wrapper');
   const overlayContent    = document.getElementById('overlay-content');
   const infoPanel         = document.getElementById('info-panel');
   const infoBackdrop      = document.getElementById('info-backdrop');
@@ -571,9 +672,16 @@ import { pieces } from '../data/pieces.js';
   const infoDimensions    = document.getElementById('info-dimensions');
   const infoDescription   = document.getElementById('info-description');
   const infoExpand        = document.getElementById('info-expand');
+  const infoScroll        = document.getElementById('info-scroll');
   const infoGalleryScroll = document.getElementById('info-gallery-scroll');
 const arrowLeft         = document.getElementById('arrow-left');
   const arrowRight        = document.getElementById('arrow-right');
+  const pieceScrubber     = document.getElementById('piece-scrubber');
+  const imgScrubber       = document.getElementById('img-scrubber');
+  const imgUp             = document.getElementById('img-up');
+  const imgDown           = document.getElementById('img-down');
+
+  const titleRawText = siteTitle.textContent;
 
   let currentPieceId = null;
   let currentIndex = 0;
@@ -581,58 +689,179 @@ const arrowLeft         = document.getElementById('arrow-left');
 
   // ── Piece navigation ───────────────────────────────
 
-  // Initialise: place each slide at its index offset, no animation
-  gallerySlides.forEach((slide, i) => {
-    slide.style.transition = 'none';
-    slide.style.transform  = `translateX(${i * 100}vw)`;
+  // Temporary spacers so slides can be centred before clones are ready
+  const galStartSpacer = document.createElement('div');
+  galStartSpacer.style.cssText = 'min-width:50vw;flex-shrink:0;height:100vh;';
+  const galEndSpacer = document.createElement('div');
+  galEndSpacer.style.cssText = 'min-width:50vw;flex-shrink:0;height:100vh;';
+  gallery.insertBefore(galStartSpacer, gallerySlides[0]);
+  gallery.appendChild(galEndSpacer);
+
+  function scrollToSlide(idx, smooth) {
+    const slide = gallerySlides[idx];
+    if (!slide) return;
+    const target = slide.offsetLeft + slide.offsetWidth / 2 - gallery.clientWidth / 2;
+    gallery.scrollTo({ left: Math.max(0, target), behavior: smooth ? 'smooth' : 'instant' });
+  }
+
+  let cloneLastEl = null, cloneFirstEl = null;
+
+  function setupInfiniteClones() {
+    galStartSpacer.remove();
+    galEndSpacer.remove();
+    const N = gallerySlides.length;
+    const firstSlide = gallerySlides[0];
+    const lastSlide  = gallerySlides[N - 1];
+    cloneLastEl  = lastSlide.cloneNode(true);
+    cloneFirstEl = firstSlide.cloneNode(true);
+    // Copy computed inline styles so portrait/landscape widths match
+    cloneLastEl.style.cssText  = lastSlide.style.cssText;
+    cloneFirstEl.style.cssText = firstSlide.style.cssText;
+    const copyImgStyle = (from, to) => {
+      const fi = from.querySelector('.gallery__img');
+      const ti = to.querySelector('.gallery__img');
+      if (fi && ti) ti.style.cssText = fi.style.cssText;
+    };
+    copyImgStyle(lastSlide,  cloneLastEl);
+    copyImgStyle(firstSlide, cloneFirstEl);
+    gallery.insertBefore(cloneLastEl, firstSlide);
+    gallery.appendChild(cloneFirstEl);
+    scrollToSlide(currentIndex, false);
+  }
+
+  // All slides fit to viewport height with natural width — adjacent slides peek in on both sides
+  let loadedCount = 0;
+  gallerySlides.forEach(slide => {
+    const img = slide.querySelector('.gallery__img');
+    if (!img) return;
+    const check = () => {
+      slide.style.width = 'auto';
+      img.style.width = 'auto';
+      img.style.objectFit = 'unset';
+      loadedCount++;
+      if (loadedCount === gallerySlides.length) setupInfiniteClones();
+      else scrollToSlide(currentIndex, false);
+    };
+    if (img.complete && img.naturalWidth) check();
+    else img.addEventListener('load', check);
   });
 
-  let isNavigating = false;
-  const SLIDE_EASING = 'transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  scrollToSlide(0, false);
 
-  function updateArrows() {
-    const show = pieces.length > 1 && !infoPanel.classList.contains('is-open');
-    arrowLeft.classList.toggle('is-visible', show);
-    arrowRight.classList.toggle('is-visible', show);
+  let isNavigating = false;
+
+  // Horizontal product scrubber — position tracks current product index across the
+  // screen width (near left on product 1, near right on the last), mirroring the
+  // vertical image scrubber. Available in the main view and the product overlay.
+  function updateArrows(instant) {
+    const N      = pieces.length;
+    const active = N > 1 && !mainOverlay.classList.contains('is-open');
+
+    pieceScrubber.classList.toggle('is-visible', active);
+    pieceScrubber.setAttribute('aria-hidden', active ? 'false' : 'true');
+    if (!active) return;
+
+    const idx    = currentIndex;
+    const inset  = window.innerWidth * 0.18;          // keep cluster clear of edges
+    const usable = window.innerWidth - inset * 2;
+    const x      = inset + (idx / (N - 1)) * usable;
+
+    if (instant) {
+      pieceScrubber.style.transition = 'none';
+      pieceScrubber.style.left = `${x}px`;
+      pieceScrubber.offsetHeight; // force reflow before re-enabling transition
+      pieceScrubber.style.transition = '';
+    } else {
+      pieceScrubber.style.left = `${x}px`;
+    }
+
+    arrowLeft.classList.remove('is-hidden');
+    arrowRight.classList.remove('is-hidden');
   }
 
   function navigatePiece(direction) {
     if (isNavigating) return;
     isNavigating = true;
+    const N = pieces.length;
 
-    const N        = pieces.length;
-    const prevIdx  = currentIndex;
-    const nextIdx  = (currentIndex + direction + N) % N;
-    const inSlide  = gallerySlides[nextIdx];
-    const outSlide = gallerySlides[prevIdx];
+    const scrollToCloneEl = (el) => {
+      const t = el.offsetLeft + el.offsetWidth / 2 - gallery.clientWidth / 2;
+      gallery.scrollTo({ left: Math.max(0, t), behavior: 'smooth' });
+    };
 
-    // Snap entering slide to the correct off-screen side instantly
-    inSlide.style.transition = 'none';
-    inSlide.style.transform  = `translateX(${direction * 100}vw)`;
-    inSlide.offsetHeight;    // force reflow
+    if (direction === -1 && currentIndex === 0 && cloneLastEl) {
+      // Scroll left into the clone of the last slide, then jump silently to the real one
+      scrollToCloneEl(cloneLastEl);
+      currentIndex = N - 1;
+      setTimeout(() => { scrollToSlide(N - 1, false); isNavigating = false; }, 700);
+    } else if (direction === 1 && currentIndex === N - 1 && cloneFirstEl) {
+      // Scroll right into the clone of the first slide, then jump silently to the real one
+      scrollToCloneEl(cloneFirstEl);
+      currentIndex = 0;
+      setTimeout(() => { scrollToSlide(0, false); isNavigating = false; }, 700);
+    } else {
+      currentIndex = (currentIndex + direction + N) % N;
+      scrollToSlide(currentIndex, true);
+      setTimeout(() => { isNavigating = false; }, 700);
+    }
 
-    currentIndex = nextIdx;
-
-    // Animate both slides in the same direction
-    requestAnimationFrame(() => {
-      inSlide.style.transition  = SLIDE_EASING;
-      inSlide.style.transform   = 'translateX(0)';
-      outSlide.style.transition = SLIDE_EASING;
-      outSlide.style.transform  = `translateX(${-direction * 100}vw)`;
-    });
-
-    setTimeout(() => { isNavigating = false; }, 580);
     updateArrows();
     updateCursor(lastMouseX, lastMouseY);
   }
 
-  arrowLeft.addEventListener('click',  (e) => { e.stopPropagation(); navigatePiece(-1); });
-  arrowRight.addEventListener('click', (e) => { e.stopPropagation(); navigatePiece(1); });
+  arrowLeft.addEventListener('click',  (e) => {
+    e.stopPropagation();
+    if (infoPanel.classList.contains('is-open')) switchPiece(-1); else navigatePiece(-1);
+  });
+  arrowRight.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (infoPanel.classList.contains('is-open')) switchPiece(1); else navigatePiece(1);
+  });
 
-  updateArrows();
+  updateArrows(true);
+
+  // Track scrubber in real-time as the gallery scrolls (trackpad, mouse, or programmatic)
+  gallery.addEventListener('scroll', () => {
+    if (gallerySlides.length < 2) return;
+    const N = pieces.length;
+    const first = gallerySlides[0];
+    const last  = gallerySlides[N - 1];
+    const firstCentre = first.offsetLeft + first.offsetWidth / 2;
+    const lastCentre  = last.offsetLeft  + last.offsetWidth  / 2;
+    const viewCentre  = gallery.scrollLeft + gallery.clientWidth / 2;
+    // Wrap frac for clone zones so scrubber reflects the looped position
+    let frac;
+    if (viewCentre < firstCentre)      frac = 1; // in clone-last zone → show as last slide
+    else if (viewCentre > lastCentre)  frac = 0; // in clone-first zone → show as first slide
+    else frac = (viewCentre - firstCentre) / (lastCentre - firstCentre);
+    const inset  = window.innerWidth * 0.18;
+    const usable = window.innerWidth - inset * 2;
+    pieceScrubber.style.transition = 'opacity 0.3s ease'; // suppress left transition during live scroll
+    pieceScrubber.style.left = `${inset + frac * usable}px`;
+    currentIndex = Math.round(frac * (N - 1));
+  });
+
+  // After scroll settles: if we landed on a clone, silently jump to the real slide
+  gallery.addEventListener('scrollend', () => {
+    pieceScrubber.style.transition = ''; // restore full transition
+    const N = pieces.length;
+    const viewCentre  = gallery.scrollLeft + gallery.clientWidth / 2;
+    const firstCentre = gallerySlides[0].offsetLeft + gallerySlides[0].offsetWidth / 2;
+    const lastCentre  = gallerySlides[N - 1].offsetLeft + gallerySlides[N - 1].offsetWidth / 2;
+    if (viewCentre < firstCentre && cloneLastEl) {
+      currentIndex = N - 1;
+      scrollToSlide(N - 1, false);
+    } else if (viewCentre > lastCentre && cloneFirstEl) {
+      currentIndex = 0;
+      scrollToSlide(0, false);
+    }
+    updateArrows();
+  });
 
   function updateTitle() {
+    const anyOpen = infoPanel.classList.contains('is-open') || mainOverlay.classList.contains('is-open');
     siteTitle.classList.toggle('is-panel-open', infoPanel.classList.contains('is-open'));
+    siteTitle.classList.toggle('is-overlay-active', anyOpen);
   }
 
   // ── About / Contact overlay ────────────────────────
@@ -660,35 +889,90 @@ const arrowLeft         = document.getElementById('arrow-left');
   });
 
   function activateInfoBtn() {
-    // ABOUT button — vertical expansion
-    const rect      = infoBtn.getBoundingClientRect();
-    const available = window.innerHeight - 2 * rect.top;
-    const fontSize  = parseFloat(getComputedStyle(infoBtn).fontSize);
-    const charCount = infoBtn.textContent.trim().length;
-    const lsPx      = (available - charCount * fontSize) / (charCount - 1);
-    infoBtn.style.letterSpacing = `${Math.max(lsPx / fontSize, 0.6)}em`;
     infoBtn.classList.add('is-active');
 
-    // Main title — horizontal expansion
+    // Measure title while it is still plain text
+    const remPx        = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const badgeAreaPx  = (2.25 + 5.5) * remPx;
     const titleRect    = siteTitle.getBoundingClientRect();
-    const targetWidth  = window.innerWidth - 2 * titleRect.left;
+    const availWidth   = window.innerWidth - badgeAreaPx - titleRect.left;
     const titleFs      = parseFloat(getComputedStyle(siteTitle).fontSize);
     const titleChars   = siteTitle.textContent.length;
     const currentLsPx  = parseFloat(getComputedStyle(siteTitle).letterSpacing);
     const naturalWidth = siteTitle.offsetWidth - titleChars * currentLsPx;
-    const titleLsEm    = Math.max((targetWidth - naturalWidth) / (titleChars - 1) / titleFs, 0.25);
+    const titleLsEm    = Math.max((availWidth - naturalWidth) / titleChars / titleFs, 0.25);
     siteTitle.style.letterSpacing = `${titleLsEm}em`;
+
+    // Build per-character spans (title is still plain text, so textContent is correct)
+    const raw = siteTitle.textContent;
+    siteTitle.textContent = '';
+    raw.split('').forEach(ch => {
+      const s = document.createElement('span');
+      s.className      = 'site-title__char';
+      s.style.display  = 'inline-block';
+      s.style.transition = 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.45s ease, opacity 0.45s ease';
+      s.textContent    = ch;
+      siteTitle.appendChild(s);
+    });
+
+    const charSpans = Array.from(siteTitle.querySelectorAll('.site-title__char'))
+      .filter(s => s.textContent !== ' ');
+
+    siteTitle.offsetHeight; // commit initial state before transforms
+
+    // Fold a value back within [min, max] with ricochet reflection
+    function ricochet(val, min, max) {
+      const range = max - min;
+      if (range <= 0) return min;
+      let v = ((val - min) % (2 * range) + 2 * range) % (2 * range);
+      if (v > range) v = 2 * range - v;
+      return v + min;
+    }
+
+    const PAD   = 28; // px from each screen edge
+    const TRIES = 30;
+    const placed = [];
+
+    charSpans.forEach(span => {
+      const r     = span.getBoundingClientRect();
+      const baseX = r.left + r.width / 2;
+      const baseY = r.top  + r.height / 2;
+      let bestDx = 0, bestDy = 0, bestScore = -1;
+      for (let i = 0; i < TRIES; i++) {
+        // Raw offsets larger than the viewport so ricochets occur naturally
+        const rawDx = (Math.random() - 0.5) * window.innerWidth  * 1.6;
+        const rawDy = (Math.random() - 0.5) * window.innerHeight * 1.6;
+        const ax = ricochet(baseX + rawDx, PAD, window.innerWidth  - PAD);
+        const ay = ricochet(baseY + rawDy, PAD, window.innerHeight - PAD);
+        const dx = ax - baseX, dy = ay - baseY;
+        let minD = Infinity;
+        for (const p of placed) minD = Math.min(minD, Math.hypot(ax - p.x, ay - p.y));
+        if (placed.length === 0) minD = Infinity;
+        if (minD > bestScore) { bestScore = minD; bestDx = dx; bestDy = dy; }
+      }
+      placed.push({ x: baseX + bestDx, y: baseY + bestDy });
+      const rot = (Math.random() - 0.5) * 40;
+      span.style.color     = '#2c6639';
+      span.style.opacity   = '0.45';
+      span.style.transform = `translateX(${bestDx}px) translateY(${bestDy}px) rotate(${rot}deg)`;
+    });
   }
 
   function deactivateInfoBtn() {
-    infoBtn.style.letterSpacing = '';
     infoBtn.classList.remove('is-active');
     siteTitle.style.letterSpacing = '';
+    const resetSpans = Array.from(siteTitle.querySelectorAll('.site-title__char'));
+    if (resetSpans.length) {
+      resetSpans.forEach(span => { span.style.transform = ''; span.style.color = ''; span.style.opacity = ''; });
+      setTimeout(() => { siteTitle.textContent = titleRawText; }, 460);
+    }
   }
 
   function openInfo() {
     overlayContent.innerHTML = overlayText.about + overlayText.contact;
-    mainOverlay.classList.add('is-open', 'show-content');
+    mainOverlay.classList.add('is-open');
+    overlayWrapper.classList.add('show-content');
+    overlayWrapper.setAttribute('aria-hidden', 'false');
     mainOverlay.setAttribute('aria-hidden', 'false');
     activateInfoBtn();
     updateTitle();
@@ -696,7 +980,9 @@ const arrowLeft         = document.getElementById('arrow-left');
   }
 
   function dismissOverlay() {
-    mainOverlay.classList.remove('is-open', 'show-content');
+    mainOverlay.classList.remove('is-open');
+    overlayWrapper.classList.remove('show-content');
+    overlayWrapper.setAttribute('aria-hidden', 'true');
     mainOverlay.setAttribute('aria-hidden', 'true');
     deactivateInfoBtn();
     updateTitle();
@@ -721,20 +1007,128 @@ const arrowLeft         = document.getElementById('arrow-left');
     openInfoPanel(pieces[currentIndex].id);
   });
 
-  function openInfoPanel(id) {
-    const piece = pieces.find(p => p.id === id);
-    if (!piece) return;
-    currentPieceId = id;
-
+  // Write a piece's text details into the panel
+  function setPieceDetails(piece) {
     infoName.textContent        = piece.name;
     infoYear.textContent        = piece.year;
     infoMaterials.textContent   = piece.materials;
     infoDimensions.textContent  = piece.dimensions;
     infoDescription.textContent = piece.description || '';
+  }
+
+  // (Re)build the scroll gallery for a piece. Assumes the gallery column has its
+  // final dimensions (panel already is-wide) so item heights measure correctly.
+  function buildGallery(piece) {
+    infoGalleryScroll.innerHTML = '';
+    infoGalleryScroll.scrollTop = 0;
+    const imgs = piece.additionalImages || [];
+    if (!imgs.length) return;
+    imgs.forEach(src => {
+      const item = document.createElement('div');
+      item.className = 'info-img-item';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = piece.name;
+      item.appendChild(img);
+      infoGalleryScroll.appendChild(item);
+    });
+    infoGalleryScroll.scrollTop = 0;
+  }
+
+  function applyImgFit(img) {
+    const check = () => {
+      if (img.naturalWidth > img.naturalHeight) img.style.objectFit = 'contain';
+    };
+    if (img.complete && img.naturalWidth) check(); else img.addEventListener('load', check);
+  }
+
+  // Snap gallery to idx instantly. Used to keep the background in sync when the overlay closes.
+  function placeMainGallery(idx) {
+    currentIndex = idx;
+    scrollToSlide(idx, false);
+  }
+
+  // Swap the active product in place while the overlay stays open
+  let isSwitching = false;
+  const SWITCH_DUR = 220;
+
+  function switchPiece(direction) {
+    if (!infoPanel.classList.contains('is-open')) return;
+    if (isSwitching) return;
+    const N = pieces.length;
+    if (N < 2) return;
+
+    const curIdx  = pieces.findIndex(p => p.id === currentPieceId);
+    const nextIdx = (curIdx + direction + N) % N;
+    const piece   = pieces[nextIdx];
+
+    isSwitching = true;
+    currentPieceId = piece.id;
+    placeMainGallery(nextIdx);
+    updateArrows();
+
+    // Slide current content out in direction of travel
+    infoScroll.style.transition = `opacity ${SWITCH_DUR}ms ease, transform ${SWITCH_DUR}ms ease`;
+    infoScroll.style.opacity   = '0';
+    infoScroll.style.transform = `translateX(${-direction * 80}px)`;
+
+    if (infoGalleryScroll.children.length) {
+      infoGalleryScroll.style.transition = `opacity ${SWITCH_DUR}ms ease`;
+      infoGalleryScroll.style.opacity   = '0';
+    }
+
+    setTimeout(() => {
+      setPieceDetails(piece);
+
+      if (piece.additionalImages && piece.additionalImages.length) {
+        if (!infoPanel.classList.contains('is-wide')) {
+          infoPanel.style.transition = 'none';
+          infoPanel.classList.add('is-wide');
+          infoPanel.offsetHeight;
+          infoPanel.style.transition = '';
+        }
+        buildGallery(piece);
+      } else {
+        infoGalleryScroll.innerHTML = '';
+        infoPanel.classList.remove('is-wide');
+      }
+      infoExpand.classList.remove('is-visible');
+
+      // Snap new content to incoming side, then slide it in
+      infoScroll.style.transition = 'none';
+      infoScroll.style.transform  = `translateX(${direction * 80}px)`;
+      infoScroll.offsetHeight;
+      infoScroll.style.transition = `opacity ${SWITCH_DUR}ms ease, transform ${SWITCH_DUR}ms ease`;
+      infoScroll.style.opacity    = '1';
+      infoScroll.style.transform  = 'translateX(0)';
+
+      infoGalleryScroll.style.transition = `opacity ${SWITCH_DUR}ms ease`;
+      infoGalleryScroll.style.opacity    = '1';
+
+      setTimeout(() => {
+        infoScroll.style.transition = '';
+        infoScroll.style.opacity    = '';
+        infoScroll.style.transform  = '';
+        infoGalleryScroll.style.transition = '';
+        infoGalleryScroll.style.opacity    = '';
+        isSwitching = false;
+      }, SWITCH_DUR);
+
+      requestAnimationFrame(() => { infoGalleryScroll.scrollTop = 0; updateImgScrubber(true); });
+      updateImgScrubber(true);
+      updateCursor(lastMouseX, lastMouseY);
+    }, SWITCH_DUR);
+  }
+
+  function openInfoPanel(id) {
+    const piece = pieces.find(p => p.id === id);
+    if (!piece) return;
+    currentPieceId = id;
+
+    setPieceDetails(piece);
 
     if (piece.additionalImages && piece.additionalImages.length) {
       infoGalleryScroll.innerHTML = '';
-      infoGalleryScroll.scrollTop = 0;
 
       // Apply is-wide instantly FIRST so the gallery column reaches its real dimensions
       infoPanel.style.transition = 'none';
@@ -742,31 +1136,15 @@ const arrowLeft         = document.getElementById('arrow-left');
       infoPanel.offsetHeight; // force reflow — gallery now has correct clientHeight
       infoPanel.style.transition = '';
 
-      const peekPx    = 48;
-      const itemHeight = infoGalleryScroll.clientHeight > 0
-        ? infoGalleryScroll.clientHeight - peekPx
-        : window.innerHeight - peekPx;
-
-      piece.additionalImages.forEach(src => {
-        const item = document.createElement('div');
-        item.className = 'info-img-item';
-        item.style.height = `${itemHeight}px`;
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = piece.name;
-        item.appendChild(img);
-        infoGalleryScroll.appendChild(item);
-      });
-
-      infoGalleryScroll.scrollTop = 0;
-      requestAnimationFrame(() => { infoGalleryScroll.scrollTop = 0; });
-
-      infoPanel.classList.add('is-open');
-      infoExpand.classList.remove('is-visible');
+      buildGallery(piece);
+      requestAnimationFrame(() => { infoGalleryScroll.scrollTop = 0; updateImgScrubber(true); });
     } else {
-      infoPanel.classList.add('is-open');
-      infoExpand.classList.remove('is-visible');
+      infoGalleryScroll.innerHTML = '';
     }
+
+    infoPanel.classList.add('is-open');
+    infoExpand.classList.remove('is-visible');
+    updateImgScrubber(true);
 
     infoPanel.setAttribute('aria-hidden', 'false');
     infoBackdrop.classList.add('is-active');
@@ -792,18 +1170,21 @@ const arrowLeft         = document.getElementById('arrow-left');
 
     infoPanel.classList.add('is-wide');
     infoExpand.classList.remove('is-visible');
+    requestAnimationFrame(() => updateImgScrubber(true));
   }
 
   function closeExpanded() {
     infoPanel.classList.remove('is-wide');
     infoExpand.innerHTML = 'View more images';
     infoExpand.classList.add('is-visible');
+    updateImgScrubber();
   }
 
   function closeInfoPanel() {
     infoPanel.classList.remove('is-open', 'is-wide');
     infoPanel.setAttribute('aria-hidden', 'true');
     infoBackdrop.classList.remove('is-active');
+    updateImgScrubber();
     infoExpand.innerHTML = 'View more images';
     infoExpand.classList.remove('is-visible');
     setTimeout(() => {
@@ -819,6 +1200,80 @@ const arrowLeft         = document.getElementById('arrow-left');
   infoExpand.addEventListener('click', openExpanded);
 infoClose.addEventListener('click', closeInfoPanel);
   infoBackdrop.addEventListener('click', closeInfoPanel);
+
+  siteTitle.addEventListener('click', () => {
+    if (infoPanel.classList.contains('is-open')) closeInfoPanel();
+    if (mainOverlay.classList.contains('is-open')) dismissOverlay();
+  });
+
+  // ── Image scrubber ──────────────────────────────────
+
+  function getGalleryItems() {
+    return Array.from(infoGalleryScroll.querySelectorAll('.info-img-item'));
+  }
+
+  // Image whose centre is closest to the scroll container's centre
+  function currentImgIndex() {
+    const items = getGalleryItems();
+    if (!items.length) return 0;
+    const viewCentre = infoGalleryScroll.scrollTop + infoGalleryScroll.clientHeight / 2;
+    let best = 0, bestDist = Infinity;
+    items.forEach((it, i) => {
+      const d = Math.abs((it.offsetTop + it.offsetHeight / 2) - viewCentre);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+    return best;
+  }
+
+  function scrollToImg(idx) {
+    const items = getGalleryItems();
+    if (!items[idx]) return;
+    const item = items[idx];
+    const target = item.offsetTop + item.offsetHeight / 2 - infoGalleryScroll.clientHeight / 2;
+    infoGalleryScroll.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+  }
+
+  // Position the cluster at (index / (N-1)) of the usable height + toggle arrows
+  function updateImgScrubber(instant) {
+    const items  = getGalleryItems();
+    const N      = items.length;
+    const active = infoPanel.classList.contains('is-open')
+      && infoPanel.classList.contains('is-wide')
+      && N > 1;
+
+    imgScrubber.classList.toggle('is-visible', active);
+    imgScrubber.setAttribute('aria-hidden', active ? 'false' : 'true');
+    if (!active) return;
+
+    const idx    = currentImgIndex();
+    const inset  = window.innerHeight * 0.18;          // keep cluster clear of edges
+    const usable = window.innerHeight - inset * 2;
+    const y      = inset + (idx / (N - 1)) * usable;
+
+    if (instant) {
+      imgScrubber.style.transition = 'none';
+      imgScrubber.style.top = `${y}px`;
+      imgScrubber.offsetHeight; // force reflow before re-enabling transition
+      imgScrubber.style.transition = '';
+    } else {
+      imgScrubber.style.top = `${y}px`;
+    }
+
+    imgUp.classList.toggle('is-hidden', idx <= 0);
+    imgDown.classList.toggle('is-hidden', idx >= N - 1);
+  }
+
+  imgUp.addEventListener('click',   () => scrollToImg(currentImgIndex() - 1));
+  imgDown.addEventListener('click', () => scrollToImg(currentImgIndex() + 1));
+
+  let scrubberTick = false;
+  infoGalleryScroll.addEventListener('scroll', () => {
+    if (scrubberTick) return;
+    scrubberTick = true;
+    requestAnimationFrame(() => { scrubberTick = false; updateImgScrubber(); });
+  });
+
+  window.addEventListener('resize', () => { updateImgScrubber(true); updateArrows(true); });
 
   // ── Escape key ─────────────────────────────────────
 
@@ -863,11 +1318,60 @@ infoClose.addEventListener('click', closeInfoPanel);
       }
       return;
     }
-    const overlayActive = infoPanel.classList.contains('is-open')
-      || mainOverlay.classList.contains('is-open');
-    if (!overlayActive) {
+    // Product overlay open: up/down scrub images, left/right switch products in place
+    if (infoPanel.classList.contains('is-open')) {
+      if (infoPanel.classList.contains('is-wide')) {
+        if (e.key === 'ArrowUp')   { e.preventDefault(); scrollToImg(currentImgIndex() - 1); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); scrollToImg(currentImgIndex() + 1); }
+      }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); switchPiece(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); switchPiece(1); }
+      return;
+    }
+
+    // Main view: left/right switch pieces (up/down disabled here)
+    if (!mainOverlay.classList.contains('is-open')) {
       if (e.key === 'ArrowLeft')  navigatePiece(-1);
       if (e.key === 'ArrowRight') navigatePiece(1);
     }
   });
+
+  // ── Circular title: "INFO AND CONTACT AND" ──────────
+  // Each character occupies one equal angular slot around the circle; spaces are
+  // blank slots, so inter-letter and inter-word spacing share the same unit. The
+  // trailing space makes the wrap gap (last AND → INFO) match the other word gaps.
+  (function buildInfoCircle() {
+    const svg = document.getElementById('info-circle');
+    if (!svg) return;
+    const SVGNS = 'http://www.w3.org/2000/svg';
+    const cx = 50, cy = 50, r = 40;
+    const RED = '#e61515';   // same red as nav arrows
+    const BLUE = '#353269';  // same blue as the main title
+    const segments = [
+      ['INFO', RED], [' ', null], ['AND', BLUE], [' ', null],
+      ['CONTACT', RED], [' ', null], ['AND', BLUE], [' ', null],
+    ];
+    const chars = [];
+    segments.forEach(([word, color]) => {
+      for (const ch of word) chars.push({ ch, color });
+    });
+    const n = chars.length;
+    chars.forEach(({ ch, color }, i) => {
+      if (ch === ' ') return; // blank slot — keeps spacing equal across words
+      const phi = (i / n) * 360;                 // degrees clockwise from top
+      const rad = (phi - 90) * Math.PI / 180;
+      const x = cx + r * Math.cos(rad);
+      const y = cy + r * Math.sin(rad);
+      const t = document.createElementNS(SVGNS, 'text');
+      t.setAttribute('x', x);
+      t.setAttribute('y', y);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('dominant-baseline', 'central');
+      t.setAttribute('transform', `rotate(${phi} ${x} ${y})`);
+      t.setAttribute('fill', color);
+      t.setAttribute('font-weight', '700');
+      t.textContent = ch;
+      svg.appendChild(t);
+    });
+  })();
 </script>

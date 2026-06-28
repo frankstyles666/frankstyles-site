@@ -1,12 +1,12 @@
 export const pieces = [
   {
-    id: 'Garston Bench',
-    name: 'GARSTON BENCH',
+    id: 'Carolines Bench',
+    name: 'CAROLINES BENCH',
     year: 2025,
     materials: 'ELM, WALNUT',
     dimensions: '1500 x 440 x 250',
     description: `Designed for daily use, the bench is simple in form and sturdy in stance.\n\nThe British elm seat is formed from two boards joined along their natural line and reinforced with walnut butterfly joints. Beneath, traditional leg forms are hinted at rather than declared, while a central stretcher meets them in a through mortise and tenon secured with a tapered dovetail wedge, allowing the bench to be fully demountable. The result is a quiet fusion of styles.`,
-    mainImage: '/images/Garston Bench/GarstonBench1.jpg',
+    mainImage: '/images/backgrounds/CAROLINESBENCHBACKGROUND-1.jpg',
     additionalImages: [
       '/images/Garston Bench/GarstonBench2.jpg',
       '/images/Garston Bench/GarstonBench4.jpg',
@@ -22,9 +22,28 @@ export const pieces = [
     materials: 'Elm',
     dimensions: '1500 x 440 x 250',
     description: '',
-    mainImage: '/images/Garston Table/GarstonTable1.jpg',
+    mainImage: '/images/backgrounds/IMG_20260112_113053531-1.jpg',
     additionalImages: [
       '/images/Garston Table/GarstonTable2.jpg',
+    ],
+  },
+  {
+    id: 'Pig Lane Table',
+    name: 'PIG LANE TABLE',
+    year: 2025,
+    materials: 'ASH',
+    dimensions: '',
+    description: '',
+    mainImage: '/images/backgrounds/PIGLANEBACKGROUND-2.jpg',
+    additionalImages: [
+      '/images/Pig Lane Table/IMG_7301.jpg',
+      '/images/Pig Lane Table/IMG_7309.jpg',
+      '/images/Pig Lane Table/IMG_7323.jpg',
+      '/images/Pig Lane Table/IMG_7344.jpg',
+      '/images/Pig Lane Table/IMG_7361.jpg',
+      '/images/Pig Lane Table/IMG_7365.jpg',
+      '/images/Pig Lane Table/IMG_7382.jpg',
+      '/images/Pig Lane Table/IMG_7388.jpg',
     ],
   },
 ];
