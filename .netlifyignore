@@ -1,0 +1,11 @@
+node_modules
+dist
+.astro
+.git
+public/fonts/Xanh_Mono
+public/fonts/Space_Mono
+public/fonts/JetBrains_Mono
+public/fonts/SUSE_Mono
+public/fonts/Share_Tech_Mono
+public/fonts/Lekton
+public/fonts/IBM_Plex_Sans

@@ -1,0 +1,289 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { pieces } from '../../data/pieces.js';
+
+export function getStaticPaths() {
+  return pieces.map(piece => ({
+    params: {
+      slug: piece.id.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    },
+    props: { piece }
+  }));
+}
+
+const { piece } = Astro.props;
+
+const galleryImages = piece.desktopFirstImage
+  ? [piece.desktopFirstImage, ...(piece.additionalImages || []).slice(1)]
+  : (piece.additionalImages || []);
+---
+
+<Layout title={`${piece.name} — Frank Styles`}>
+
+  <nav class="side-rail">
+    <a href="/" class="site-title">FRANK STYLES</a>
+    <ul class="side-nav">
+      <li>
+        <a href="/?filter=for-client" class={`side-nav__item${piece.category === 'for-client' ? ' side-nav__item--active' : ''}`}>
+          Commissions
+        </a>
+      </li>
+      <li>
+        <a href="/?filter=for-me" class={`side-nav__item${piece.category === 'for-me' ? ' side-nav__item--active' : ''}`}>
+          Personal Work
+        </a>
+      </li>
+      <li><a href="/?filter=all" class="side-nav__item">All Work</a></li>
+      <li><a href="/?about" class="side-nav__item">Information</a></li>
+    </ul>
+    <a href="https://www.instagram.com/frankstyl.es" target="_blank" rel="noopener noreferrer" class="rail-instagram" aria-label="Instagram">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+        <circle cx="12" cy="12" r="4.5"/>
+        <circle cx="17.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/>
+      </svg>
+    </a>
+  </nav>
+
+  <div class="piece-page">
+
+    <div class="piece-page__gallery">
+      {galleryImages.map((img, i) => (
+        <div class="piece-page__img-item">
+          <img
+            src={img.src ?? img}
+            alt={piece.name}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            draggable="false"
+          />
+        </div>
+      ))}
+    </div>
+
+    <div class="piece-page__details">
+      <div class="piece-page__scroll">
+        <header class="piece-page__header">
+          <p class="piece-page__name">{piece.name}</p>
+          <p class="piece-page__year">{piece.year}</p>
+        </header>
+        <dl class="piece-page__meta">
+          <dt>Materials</dt>
+          <dd>{piece.materials}</dd>
+          <dt>Dimensions</dt>
+          <dd>{piece.dimensions}</dd>
+        </dl>
+        {piece.description && (
+          <p class="piece-page__description">{piece.description}</p>
+        )}
+      </div>
+    </div>
+
+  </div>
+
+</Layout>
+
+<script>
+  document.querySelectorAll('a[href]').forEach(link => {
+    link.addEventListener('click', e => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('http') || href.startsWith('//') || href.startsWith('mailto')) return;
+      e.preventDefault();
+      document.body.style.transition = 'opacity 0.25s ease';
+      document.body.style.opacity = '0';
+      setTimeout(() => { window.location.href = href; }, 250);
+    });
+  });
+</script>
+
+<style>
+  @keyframes page-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  :global(body) {
+    opacity: 0;
+    animation: page-fade-in 0.4s ease 0.05s forwards;
+  }
+
+  /* ── Side rail ─────────────────────────────────── */
+
+  .side-rail {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    background: #faf9f7;
+    box-sizing: border-box;
+  }
+
+  .site-title {
+    font-family: 'SimSun', serif;
+    font-size: 2rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    color: #353269;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+    line-height: 1;
+    text-decoration: none;
+    display: block;
+  }
+
+  .side-nav {
+    list-style: none;
+    margin: 2.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .side-nav__item {
+    display: block;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(53, 50, 105, 0.4);
+    padding: 0.45rem 0;
+    text-align: left;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .side-nav__item:hover {
+    color: #353269;
+  }
+
+  .side-nav__item--active {
+    color: #e61515;
+  }
+
+  .rail-instagram {
+    margin-top: auto;
+    color: #e61515;
+    line-height: 0;
+    opacity: 0.75;
+    transition: opacity 0.25s ease;
+  }
+
+  .rail-instagram:hover {
+    opacity: 1;
+  }
+
+  /* ── Piece page ────────────────────────────────── */
+
+  .piece-page {
+    position: fixed;
+    left: 260px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: row;
+    background: #faf9f7;
+  }
+
+  .piece-page__gallery {
+    flex: 0 0 40vw;
+    position: relative;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    padding-top: 2rem;
+    padding-left: 3rem;
+    border-right: 1px solid rgba(26, 26, 26, 0.06);
+  }
+
+  .piece-page__gallery::-webkit-scrollbar {
+    display: none;
+  }
+
+  .piece-page__img-item {
+    margin-bottom: 2rem;
+  }
+
+  .piece-page__img-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .piece-page__details {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+  }
+
+  .piece-page__scroll {
+    padding: 2rem 5rem 3.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+  }
+
+  .piece-page__header {
+    padding-top: 0;
+  }
+
+  .piece-page__name {
+    font-family: 'SimSun', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.1;
+    color: #e61515;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+
+  .piece-page__year {
+    margin-top: 0.6rem;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #aaa;
+  }
+
+  .piece-page__meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem 1.75rem;
+    align-items: baseline;
+    width: 100%;
+  }
+
+  .piece-page__meta dt {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #bbb;
+  }
+
+  .piece-page__meta dd {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: #444;
+    line-height: 1.55;
+  }
+
+  .piece-page__description {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    color: #444;
+    line-height: 1.7;
+    white-space: pre-line;
+  }
+</style>

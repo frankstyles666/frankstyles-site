@@ -1,15 +1,14 @@
 plugins = []
 headers = []
-redirects = []
 
 [functions]
 
 [functions."*"]
 
 [build]
-publish = "/Users/frankstyles/Library/CloudStorage/GoogleDrive-frankastyles@gmail.com/My Drive/Sole Trader Business/01 - Website/frankstyles-site/dist"
-publishOrigin = "ui"
-commandOrigin = "ui"
+publish = "/Users/frankstyles/Library/CloudStorage/GoogleDrive-frankastyles@gmail.com/My Drive/Sole Trader Business/02 Marketing/Website/01 - Website/frankstyles-site/dist"
+publishOrigin = "config"
+commandOrigin = "config"
 command = "npm run build"
 
 [build.environment]
@@ -25,3 +24,15 @@ command = "npm run build"
 [build.processing.js]
 
 [build.services]
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
