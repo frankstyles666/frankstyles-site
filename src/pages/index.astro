@@ -732,12 +732,12 @@ const browserPieces = await Promise.all(
     display: none;
   }
 
-  .info-panel__description a {
+  :global(.info-panel__description a) {
     color: #e61515;
     text-decoration: none;
   }
 
-  .info-panel__description a:hover {
+  :global(.info-panel__description a:hover) {
     text-decoration: underline;
   }
 
