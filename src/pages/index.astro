@@ -732,6 +732,15 @@ const browserPieces = await Promise.all(
     display: none;
   }
 
+  .info-panel__description a {
+    color: #e61515;
+    text-decoration: none;
+  }
+
+  .info-panel__description a:hover {
+    text-decoration: underline;
+  }
+
   .info-panel__expand {
     position: fixed;
     left: 70vw;
@@ -1605,7 +1614,7 @@ const browserPieces = await Promise.all(
     infoYear.textContent        = piece.year;
     infoMaterials.textContent   = piece.materials;
     infoDimensions.textContent  = piece.dimensions;
-    infoDescription.textContent = piece.description || '';
+    infoDescription.innerHTML = piece.description || '';
   }
 
   function buildGallery(piece) {

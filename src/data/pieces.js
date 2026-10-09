@@ -51,7 +51,7 @@ export const pieces = [
     year: 2026,
     materials: 'BRITISH ASH',
     dimensions: '1110 x 440 x 490',
-    description: `A window seat for every season, made to sit over a radiator.\n\nThe brief was a place to sit in the window all year round. With a radiator beneath, the design had to let the heat move freely. A slatted base and evenly spaced dowels leave generous room for warm air to rise, while breaking up the view of the radiator behind.\n\nFour hand-turned legs are joined to the rails with mortise and tenons. The end of each rail is scribed to the radius of the leg, giving a tight, seamless join. The dowels add strength as well as rhythm, and the piece was designed to sit comfortably alongside the furniture already in the room.\n\nCushion by Emily Campbell.`,
+    description: `A window seat for every season, made to sit over a radiator.\n\nThe brief was a place to sit in the window all year round. With a radiator beneath, the design had to let the heat move freely. A slatted base and evenly spaced dowels leave generous room for warm air to rise, while breaking up the view of the radiator behind.\n\nFour hand-turned legs are joined to the rails with mortise and tenons. The end of each rail is scribed to the radius of the leg, giving a tight, seamless join. The dowels add strength as well as rhythm, and the piece was designed to sit comfortably alongside the furniture already in the room.\n\nCushion by <a href="https://www.instagram.com/emilycampbell_studio/" target="_blank" rel="noopener noreferrer">Emily Campbell</a>.`,
     mainImage: img('backgrounds/AWarmSeatBackground.jpg'),
     mobileMainImage: img('backgrounds/AWarmSeatMobileHero.jpg'),
     additionalImages: [

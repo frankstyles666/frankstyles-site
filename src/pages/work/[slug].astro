@@ -73,7 +73,7 @@ const galleryImages = piece.desktopFirstImage
           <dd>{piece.dimensions}</dd>
         </dl>
         {piece.description && (
-          <p class="piece-page__description">{piece.description}</p>
+          <p class="piece-page__description" set:html={piece.description} />
         )}
       </div>
     </div>
@@ -285,5 +285,14 @@ const galleryImages = piece.desktopFirstImage
     color: #444;
     line-height: 1.7;
     white-space: pre-line;
+  }
+
+  .piece-page__description a {
+    color: #e61515;
+    text-decoration: none;
+  }
+
+  .piece-page__description a:hover {
+    text-decoration: underline;
   }
 </style>
