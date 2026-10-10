@@ -144,9 +144,16 @@ const browserPieces = await Promise.all(
   <aside class="info-panel" id="info-panel" aria-hidden="true">
     <div class="info-panel__inner">
 
+      <!-- Mobile: title shown above carousel -->
+      <div class="info-panel__mobile-header" id="info-mobile-header">
+        <p class="info-panel__name" id="info-mobile-name"></p>
+        <p class="info-panel__year" id="info-mobile-year"></p>
+      </div>
+
       <!-- Gallery column -->
       <div class="info-panel__gallery" id="info-gallery">
         <div class="info-panel__gallery-scroll" id="info-gallery-scroll"></div>
+        <div class="carousel-counter" id="carousel-counter"></div>
         <div class="gallery-progress" id="gallery-progress"></div>
       </div>
 
@@ -358,6 +365,10 @@ const browserPieces = await Promise.all(
   }
 
   .hamburger-btn {
+    display: none;
+  }
+
+  .carousel-counter {
     display: none;
   }
 
@@ -651,6 +662,10 @@ const browserPieces = await Promise.all(
     padding-left: 3rem;
   }
 
+  .info-panel__mobile-header {
+    display: none;
+  }
+
   .info-panel__details {
     position: relative;
     flex: 1;
@@ -892,6 +907,7 @@ const browserPieces = await Promise.all(
       align-items: center;
       padding: 1rem 1.25rem;
       border-bottom: 1px solid rgba(26, 26, 26, 0.07);
+      z-index: 20;
     }
 
     .site-title {
@@ -984,7 +1000,7 @@ const browserPieces = await Promise.all(
       width: 100%;
       height: 100dvh;
       overflow-y: auto;
-      overflow-x: hidden;
+      overflow-x: clip;
       opacity: 1;
       transform: translateY(100%);
       transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -1001,6 +1017,17 @@ const browserPieces = await Promise.all(
     .info-panel__inner {
       flex-direction: column;
       height: auto;
+      padding-left: 0;
+    }
+
+    .info-panel__mobile-header {
+      display: flex;
+      flex-direction: column;
+      padding: 3.5rem 1.25rem 0.75rem;
+    }
+
+    .info-panel__header {
+      display: none;
     }
 
     .info-panel__details {
@@ -1016,8 +1043,8 @@ const browserPieces = await Promise.all(
       flex: none;
       overflow: visible;
       height: auto;
-      padding: 5rem 1.5rem 2rem;
-      gap: 1.75rem;
+      padding: 1.5rem 1.25rem 5rem;
+      gap: 1.5rem;
     }
 
     .info-panel__name {
@@ -1026,18 +1053,38 @@ const browserPieces = await Promise.all(
 
     .info-panel__gallery {
       flex: none;
-      height: auto;
-      overflow: visible;
+      width: 100%;
+      overflow: hidden;
       border-right: none;
-      border-top: 1px solid rgba(26, 26, 26, 0.06);
+      border-top: none;
     }
 
     .info-panel__gallery-scroll {
       position: relative;
       inset: unset;
-      overflow: visible;
-      height: auto;
-      padding-bottom: 4rem;
+      display: flex;
+      flex-direction: row;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      height: 72vw;
+      padding: 0;
+    }
+
+    .info-panel__gallery-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .carousel-counter {
+      display: block;
+      text-align: right;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.13em;
+      color: rgba(53, 50, 105, 0.35);
+      padding: 0.5rem 1.25rem 0;
     }
 
     .info-panel__expand {
@@ -1080,6 +1127,24 @@ const browserPieces = await Promise.all(
     }
 
     .site-copyright {
+      display: none;
+    }
+
+    .about-view {
+      left: 0;
+      top: 3.5rem;
+      padding: 1.5rem 1.25rem 4rem;
+    }
+
+    .about-view__inner {
+      grid-template-columns: 1fr;
+    }
+
+    .about-view__text {
+      height: auto;
+    }
+
+    .about-view__photo {
       display: none;
     }
   }
@@ -1177,6 +1242,36 @@ const browserPieces = await Promise.all(
     pointer-events: none;
     user-select: none;
   }
+
+  @media (max-width: 768px) {
+    .info-img-item {
+      flex: 0 0 100%;
+      width: 100%;
+      height: 72vw;
+      margin-bottom: 0;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .info-img-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    .info-img-item--vcenter {
+      height: 72vw;
+      overflow: hidden;
+    }
+
+    .info-img-item--vcenter img {
+      transform: none;
+      object-fit: contain;
+    }
+  }
 </style>
 
 <script define:vars={{ pieces: browserPieces }}>
@@ -1195,9 +1290,12 @@ const browserPieces = await Promise.all(
   const infoMaterials     = document.getElementById('info-materials');
   const infoDimensions    = document.getElementById('info-dimensions');
   const infoDescription   = document.getElementById('info-description');
+  const infoMobileName    = document.getElementById('info-mobile-name');
+  const infoMobileYear    = document.getElementById('info-mobile-year');
   const infoExpand        = document.getElementById('info-expand');
   const infoScroll        = document.getElementById('info-scroll');
   const infoGalleryScroll = document.getElementById('info-gallery-scroll');
+  const carouselCounter   = document.getElementById('carousel-counter');
   const arrowLeft         = document.getElementById('arrow-left');
   const arrowRight        = document.getElementById('arrow-right');
   const pieceScrubber     = document.getElementById('piece-scrubber');
@@ -1484,6 +1582,9 @@ const browserPieces = await Promise.all(
 
   updateArrows(true);
 
+  // On mobile, show all thumbnails immediately on load
+  if (isMobile) applyFilter('all', true);
+
   function openAbout() {
     if (isMobile) closeHamburger();
     if (infoPanel.classList.contains('is-open')) closeInfoPanel();
@@ -1696,12 +1797,25 @@ const browserPieces = await Promise.all(
     infoYear.textContent        = piece.year;
     infoMaterials.textContent   = piece.materials;
     infoDimensions.textContent  = piece.dimensions;
-    infoDescription.innerHTML = piece.description || '';
+    infoDescription.innerHTML   = piece.description || '';
+    if (isMobile) {
+      if (infoMobileName) infoMobileName.textContent = piece.name;
+      if (infoMobileYear) infoMobileYear.textContent = piece.year;
+    }
+  }
+
+  function updateCarouselCounter() {
+    if (!isMobile || !carouselCounter) return;
+    const total = infoGalleryScroll.querySelectorAll('.info-img-item').length;
+    if (total <= 1) { carouselCounter.textContent = ''; return; }
+    const current = Math.round(infoGalleryScroll.scrollLeft / infoGalleryScroll.clientWidth) + 1;
+    carouselCounter.textContent = `${current} / ${total}`;
   }
 
   function buildGallery(piece) {
     infoGalleryScroll.innerHTML = '';
-    infoGalleryScroll.scrollTop = 0;
+    infoGalleryScroll.scrollTop  = 0;
+    infoGalleryScroll.scrollLeft = 0;
     let imgs = piece.additionalImages || [];
     if (!isMobile && piece.desktopFirstImage) {
       imgs = [piece.desktopFirstImage, ...imgs.slice(1)];
@@ -1716,7 +1830,13 @@ const browserPieces = await Promise.all(
       item.appendChild(img);
       infoGalleryScroll.appendChild(item);
     });
-    infoGalleryScroll.scrollTop = 0;
+    infoGalleryScroll.scrollTop  = 0;
+    infoGalleryScroll.scrollLeft = 0;
+    updateCarouselCounter();
+  }
+
+  if (isMobile) {
+    infoGalleryScroll.addEventListener('scroll', updateCarouselCounter, { passive: true });
   }
 
   function placeMainGallery(idx) {
