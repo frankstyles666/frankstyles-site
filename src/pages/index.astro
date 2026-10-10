@@ -1535,12 +1535,13 @@ const browserPieces = await Promise.all(
   }
 
   function updateURL() {
-    if (!infoPanel.classList.contains('is-open')) {
+    if (!infoPanel.classList.contains('is-open') || !currentPieceId) {
       history.replaceState(null, '', '/');
       return;
     }
-    const slug = getSlug(pieces[currentIndex]);
-    history.replaceState(null, '', '/' + slug);
+    const piece = pieces.find(p => p.id === currentPieceId);
+    if (!piece) return;
+    history.replaceState(null, '', '/' + getSlug(piece));
   }
 
   // Auto-open panel if URL contains a valid slug on load
