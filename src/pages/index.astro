@@ -907,7 +907,7 @@ const browserPieces = await Promise.all(
       align-items: center;
       padding: 1rem 1.25rem;
       border-bottom: 1px solid rgba(26, 26, 26, 0.07);
-      z-index: 20;
+      z-index: 210;
     }
 
     .site-title {
@@ -969,7 +969,12 @@ const browserPieces = await Promise.all(
     }
 
     .rail-instagram {
-      display: none;
+      display: block;
+      position: fixed;
+      bottom: 1.25rem;
+      left: 1.25rem;
+      margin-top: 0;
+      z-index: 15;
     }
 
     .piece-grid {
@@ -1069,7 +1074,7 @@ const browserPieces = await Promise.all(
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      height: 72vw;
+      height: 88vw;
       padding: 0;
     }
 
@@ -1247,7 +1252,7 @@ const browserPieces = await Promise.all(
     .info-img-item {
       flex: 0 0 100%;
       width: 100%;
-      height: 72vw;
+      height: 88vw;
       margin-bottom: 0;
       scroll-snap-align: start;
       display: flex;
@@ -1263,7 +1268,7 @@ const browserPieces = await Promise.all(
     }
 
     .info-img-item--vcenter {
-      height: 72vw;
+      height: 88vw;
       overflow: hidden;
     }
 
