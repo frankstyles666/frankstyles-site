@@ -36,7 +36,12 @@ const browserPieces = await Promise.all(
   <!-- Left rail -->
   <nav class="side-rail" id="side-rail">
     <p class="site-title" id="site-title">FRANK STYLES</p>
-    <ul class="side-nav">
+    <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <ul class="side-nav" id="side-nav">
       <li>
         <button class="side-nav__item side-nav__item--commissions" id="commissions-nav-btn">Commissions</button>
         <ul class="commissions-dropdown" id="commissions-dropdown">
@@ -350,6 +355,10 @@ const browserPieces = await Promise.all(
 
   .rail-instagram:hover {
     opacity: 1;
+  }
+
+  .hamburger-btn {
+    display: none;
   }
 
   /* ── Piece grid ───────────────────────────────────── */
@@ -890,18 +899,61 @@ const browserPieces = await Promise.all(
       letter-spacing: 0.1em;
     }
 
+    .hamburger-btn {
+      display: flex;
+      flex-direction: column;
+      gap: 4.5px;
+      padding: 0.35rem;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .hamburger-btn span {
+      display: block;
+      width: 20px;
+      height: 1.5px;
+      background: #353269;
+      transition: transform 0.25s ease, opacity 0.2s ease;
+    }
+
+    .hamburger-btn.is-open span:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    .hamburger-btn.is-open span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger-btn.is-open span:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
     .side-nav {
-      flex-direction: row;
-      gap: 1rem;
-      margin: 0 0 0 auto;
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      flex-direction: column;
+      gap: 0;
+      margin: 0;
+      background: #faf9f7;
+      border-bottom: 1px solid rgba(26, 26, 26, 0.07);
+      padding: 0.5rem 1.25rem 1rem;
+      z-index: 10;
+    }
+
+    .side-nav.is-open {
+      display: flex;
     }
 
     .side-nav__item {
-      padding: 0.25rem 0;
+      padding: 0.65rem 0;
+      text-align: left;
     }
 
     .rail-instagram {
-      margin: 0 0 0 1rem;
+      display: none;
     }
 
     .piece-grid {
@@ -1154,6 +1206,35 @@ const browserPieces = await Promise.all(
   const titleRawText = siteTitle.textContent;
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
+  // ── Hamburger (mobile only) ────────────────────────
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const sideNav      = document.getElementById('side-nav');
+
+  function closeHamburger() {
+    sideNav.classList.remove('is-open');
+    hamburgerBtn.classList.remove('is-open');
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function openHamburger() {
+    sideNav.classList.add('is-open');
+    hamburgerBtn.classList.add('is-open');
+    hamburgerBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  if (isMobile) {
+    hamburgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sideNav.classList.contains('is-open') ? closeHamburger() : openHamburger();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (sideNav.classList.contains('is-open') && !sideNav.contains(e.target) && e.target !== hamburgerBtn) {
+        closeHamburger();
+      }
+    });
+  }
+
   let currentPieceId = null;
   let panelHistoryPushed = false;
   let closingViaHistory  = false;
@@ -1404,6 +1485,7 @@ const browserPieces = await Promise.all(
   updateArrows(true);
 
   function openAbout() {
+    if (isMobile) closeHamburger();
     if (infoPanel.classList.contains('is-open')) closeInfoPanel();
     closeOpenViews();
     aboutActive = true;
@@ -1754,6 +1836,7 @@ const browserPieces = await Promise.all(
     const piece = pieces.find(p => p.id === id);
     if (!piece) return;
     currentPieceId = id;
+    if (isMobile) closeHamburger();
 
     if (aboutActive) {
       aboutActive = false;
