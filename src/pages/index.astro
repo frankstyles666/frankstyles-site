@@ -43,6 +43,14 @@ const browserPieces = await Promise.all(
     </button>
     <ul class="side-nav" id="side-nav">
       <li>
+        <button class="side-nav__item" id="all-work-nav-btn">All Work</button>
+        <ul class="all-work-dropdown" id="all-work-dropdown">
+          {pieces.map(p => (
+            <li><button class="all-work-dropdown__item" data-piece-id={p.id}>{p.name}</button></li>
+          ))}
+        </ul>
+      </li>
+      <li>
         <button class="side-nav__item side-nav__item--commissions" id="commissions-nav-btn">Commissions</button>
         <ul class="commissions-dropdown" id="commissions-dropdown">
           {pieces.filter(p => p.category === 'for-client').map(p => (
@@ -55,14 +63,6 @@ const browserPieces = await Promise.all(
         <ul class="personal-work-dropdown" id="personal-work-dropdown">
           {pieces.filter(p => p.category === 'for-me').map(p => (
             <li><button class="personal-work-dropdown__item" data-piece-id={p.id}>{p.name}</button></li>
-          ))}
-        </ul>
-      </li>
-      <li>
-        <button class="side-nav__item" id="all-work-nav-btn">All Work</button>
-        <ul class="all-work-dropdown" id="all-work-dropdown">
-          {pieces.map(p => (
-            <li><button class="all-work-dropdown__item" data-piece-id={p.id}>{p.name}</button></li>
           ))}
         </ul>
       </li>
@@ -105,12 +105,12 @@ const browserPieces = await Promise.all(
       </article>
     ))}
     <div class="section-intro collab-text" id="collab-text">
-      <p>Every commission begins with a conversation about the brief, what it needs to do, where it will live, how it will be used. From there, a detailed design is developed and refined until it's resolved, before a tool is picked up. Where a detail needs to change to serve the piece, that will be said, and explained.</p>
+      <p>Every commission begins with a conversation about the brief, what it needs to do, where it will live, how it will be used. From there, a detailed design is developed and refined until it's resolved, before a tool is picked up.</p>
       <p>The result works exactly as intended, ages well, and couldn't have been made for anyone else.</p>
       <p>Get in touch to start a conversation, or book a workshop visit.</p>
     </div>
     <div class="section-intro personal-work-text" id="personal-work-text">
-      <p>Pieces made without a client brief. Each one an opportunity to follow the material, work through a joint, or resolve an idea that a commission might never allow.</p>
+      <p>Pieces made without a client brief. Each one an opportunity to follow the material, work through a joint, or resolve an idea.</p>
     </div>
   </main>
 
@@ -118,9 +118,8 @@ const browserPieces = await Promise.all(
   <div class="about-view" id="about-view" aria-hidden="true">
     <div class="about-view__inner">
       <div class="about-view__text">
-        <p>Frank Styles is a furniture maker based in Frome, Somerset. His work spans bespoke commissions developed closely with clients and personal pieces, using traditional joinery methods and timber sourced close to home.</p>
+        <p>Frank Styles is a furniture maker based in Frome, Somerset. His work spans bespoke commissions developed closely with clients, and personal pieces, using traditional joinery methods and timber sourced close to home.</p>
         <p>Every piece is built to age well and act as a quiet contribution to your life.</p>
-        <p>Pieces start as a conversation, an idea or an instinct. Either way, it's built once, built to be lived with, and left to do the rest.</p>
         <p>Workshop visits by appointment.</p>
         <address>
           <a href="https://www.google.com/maps/search/?api=1&query=Braeside+Works%2C+Wesley+Close%2C+Christchurch+Street+West%2C+Frome%2C+BA11+1EA" target="_blank" rel="noopener noreferrer">
@@ -448,7 +447,7 @@ const browserPieces = await Promise.all(
     font-size: 12px;
     font-weight: 300;
     letter-spacing: 0.03em;
-    color: #e61515;
+    color: #353269;
     line-height: 1.7;
     padding-bottom: 0.5rem;
   }
@@ -515,10 +514,15 @@ const browserPieces = await Promise.all(
     font-size: 12px;
     font-weight: 300;
     letter-spacing: 0.03em;
-    color: #e61515;
+    color: #353269;
     line-height: 1.7;
     margin-bottom: 0.875rem;
     font-style: normal;
+  }
+
+  .about-view__inner address,
+  .about-view__inner address p {
+    color: #e61515;
   }
 
   .about-view__inner p:last-child {
