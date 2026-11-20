@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getImage } from 'astro:assets';
 import { pieces } from '../../data/pieces.js';
 
 export function getStaticPaths() {
@@ -16,9 +17,21 @@ const { piece } = Astro.props;
 const galleryImages = piece.desktopFirstImage
   ? [piece.desktopFirstImage, ...(piece.additionalImages || []).slice(1)]
   : (piece.additionalImages || []);
+
+function stripHtml(str) {
+  return str ? str.replace(/<[^>]+>/g, '').replace(/\n+/g, ' ').trim() : '';
+}
+
+const pageDescription = `${piece.altText ?? piece.name} — ${stripHtml(piece.description).split('.')[0]}.`;
+
+let ogImageUrl = '';
+if (piece.mainImage) {
+  const opt = await getImage({ src: piece.mainImage, format: 'webp', quality: 85, width: 1200 });
+  ogImageUrl = `https://frankstyl.es${opt.src}`;
+}
 ---
 
-<Layout title={`${piece.name} — Frank Styles`}>
+<Layout title={`${piece.name} — Frank Styles`} description={pageDescription} ogImage={ogImageUrl}>
 
   <nav class="side-rail">
     <a href="/" class="site-title">FRANK STYLES</a>
@@ -52,7 +65,7 @@ const galleryImages = piece.desktopFirstImage
         <div class="piece-page__img-item">
           <img
             src={img.src ?? img}
-            alt={piece.name}
+            alt={piece.altText ?? piece.name}
             loading={i === 0 ? 'eager' : 'lazy'}
             draggable="false"
           />

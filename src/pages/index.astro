@@ -3,7 +3,18 @@ import Layout from '../layouts/Layout.astro';
 import { Image, getImage } from 'astro:assets';
 import { pieces } from '../data/pieces.js';
 
+const siteUrl = 'https://frankstyl.es';
+
+function getSlug(piece) {
+  return piece.id.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function stripHtml(str) {
+  return str ? str.replace(/<[^>]+>/g, '').replace(/\n+/g, ' ').trim() : '';
+}
+
 // Pre-optimise overlay gallery images at build time so browser JS gets WebP URLs
+// Also collect main image URLs for JSON-LD and OG tags
 const browserPieces = await Promise.all(
   pieces.map(async (piece) => {
     const additionalImages = await Promise.all(
@@ -17,6 +28,11 @@ const browserPieces = await Promise.all(
       const opt = await getImage({ src: piece.desktopFirstImage, format: 'webp', quality: 85, width: 1200 });
       desktopFirstImage = { src: opt.src };
     }
+    let mainImageUrl = '';
+    if (piece.mainImage) {
+      const opt = await getImage({ src: piece.mainImage, format: 'webp', quality: 85, width: 1200 });
+      mainImageUrl = `${siteUrl}${opt.src}`;
+    }
     return {
       id: piece.id,
       name: piece.name,
@@ -26,16 +42,82 @@ const browserPieces = await Promise.all(
       description: piece.description,
       additionalImages,
       desktopFirstImage,
+      mainImageUrl,
     };
   })
 );
+
+// Use Pig Lane Table IMG_7361 (side angle, both trestles) as the OG/Twitter preview image
+const ogImageUrl = `${siteUrl}${browserPieces[1].additionalImages[0].src}`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'LocalBusiness',
+      '@id': `${siteUrl}/#business`,
+      name: 'Frank Styles',
+      description: 'Bespoke handmade furniture and fitted joinery made in Frome, Somerset. Commissions for private clients, interior designers and architects.',
+      url: siteUrl,
+      email: 'hello@frankstyl.es',
+      telephone: '+447887497425',
+      sameAs: ['https://www.instagram.com/frankstyl.es'],
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Braeside Works, Wesley Close, Christchurch Street West',
+        addressLocality: 'Frome',
+        addressRegion: 'Somerset',
+        postalCode: 'BA11 1EA',
+        addressCountry: 'GB',
+      },
+      areaServed: [
+        { '@type': 'City', name: 'Frome' },
+        { '@type': 'AdministrativeArea', name: 'Somerset' },
+        { '@type': 'City', name: 'Bath' },
+        { '@type': 'City', name: 'Bristol' },
+        { '@type': 'AdministrativeArea', name: 'Wiltshire' },
+        { '@type': 'City', name: 'London' },
+      ],
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Services',
+        itemListElement: [
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Bespoke furniture commissions' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Fitted furniture' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Trade work for interior designers and architects' } },
+        ],
+      },
+    },
+    {
+      '@type': 'Person',
+      '@id': `${siteUrl}/#person`,
+      name: 'Frank Styles',
+      jobTitle: 'Woodworker and Furniture Maker',
+      url: siteUrl,
+      sameAs: ['https://www.instagram.com/frankstyl.es'],
+      worksFor: { '@id': `${siteUrl}/#business` },
+    },
+    ...browserPieces.map((piece) => ({
+      '@type': 'CreativeWork',
+      '@id': `${siteUrl}/work/${getSlug(piece)}`,
+      url: `${siteUrl}/work/${getSlug(piece)}`,
+      name: piece.name,
+      dateCreated: String(piece.year),
+      material: piece.materials,
+      description: stripHtml(piece.description),
+      image: piece.mainImageUrl,
+      creator: { '@id': `${siteUrl}/#person` },
+    })),
+  ],
+};
 ---
 
-<Layout title="Frank Styles | Handcrafted Furniture Frome">
+<Layout title="Frank Styles | Handcrafted Furniture Frome" ogImage={ogImageUrl}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
 
   <!-- Left rail -->
   <nav class="side-rail" id="side-rail">
-    <p class="site-title" id="site-title">FRANK STYLES</p>
+    <h1 class="site-title" id="site-title">FRANK STYLES</h1>
     <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu" aria-expanded="false">
       <span></span>
       <span></span>
@@ -92,7 +174,7 @@ const browserPieces = await Promise.all(
         <div class="piece-card__img-wrap">
           {piece.mainImage && <Image
             src={piece.mainImage}
-            alt={piece.name}
+            alt={piece.altText ?? piece.name}
             class="piece-card__img"
             format="webp"
             quality={85}
@@ -221,6 +303,24 @@ const browserPieces = await Promise.all(
     </svg>
   </button>
 
+  <!--
+    Static project content for search engine and AI indexing.
+    Hidden the same way as the closed info panel: position:fixed, opacity:0, pointer-events:none.
+    JavaScript never touches this section — it only populates its own empty placeholder elements.
+  -->
+  <section class="seo-projects" aria-hidden="true">
+    {pieces.map(piece => (
+      <article>
+        <h2>{piece.name}</h2>
+        <p>{piece.year}</p>
+        <dl>
+          <dt>Materials</dt><dd>{piece.materials}</dd>
+          <dt>Dimensions (mm)</dt><dd>{piece.dimensions}</dd>
+        </dl>
+        <div set:html={piece.description} />
+      </article>
+    ))}
+  </section>
 
 </Layout>
 
@@ -899,6 +999,14 @@ const browserPieces = await Promise.all(
 
   .custom-cursor {
     display: none;
+  }
+
+  /* ── SEO content (hidden, matches closed info-panel technique) ── */
+
+  .seo-projects {
+    position: fixed;
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* ── Responsive ──────────────────────────────────── */
